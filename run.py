@@ -1,3 +1,4 @@
+import datetime
 import gspread
 from google.oauth2.service_account import Credentials
 
@@ -68,14 +69,21 @@ def get_current_date_and_time():
     """
     Returns the current date and time to accurately log a transaction.
     """
-    pass
+    now = datetime.datetime.now()
+
+    date = now.strftime("%d/%m/%Y")
+    time = now.strftime("%H:%M:%S")
+    return (date, time)
 
 
 def get_month():
     """
     Returns the current month so the correct spreadsheet can be updated.
     """
-    pass
+    now = datetime.datetime.now()
+
+    month = now.strftime("%B")
+    return month
 
 
 
@@ -109,7 +117,12 @@ def main():
     Main function
     """
     # request_input_from_user()
-    show_details_on_vat()
+    # show_details_on_vat()
+    # date, time = get_current_date_and_time()
+    # print(date)
+    # print(time)
+    month = get_month()
+    print(month)
 
 
 main()
