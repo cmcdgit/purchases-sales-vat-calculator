@@ -25,6 +25,45 @@ sales_data = sales.get_all_values()
 # print(sales_data)
 
 
+def show_details_on_vat():
+    """
+    Display details on VAT in Ireland
+    """
+
+    irish_vat_rates = {
+        23: """
+        This is the standard VAT rate in Ireland, which applies to most goods
+        and services, including electronics, household appliances, clothing,
+        and professional services.
+        """,
+        13.5: """
+        This reduced VAT rate applies to certain goods and services, including
+        electricity, gas, restaurant services, and building services (e.g.,
+        renovation and repair of residential property).
+        """,
+        9: """
+        This lower VAT rate is primarily for tourism and hospitality sectors.
+        It applies to services such as hotel accommodation, restaurant meals,
+        and admission to cinemas, theaters, museums, and certain sports
+        facilities.
+        """,
+        4.8: """
+        This special VAT rate applies exclusively to the supply of
+        livestock (cattle, sheep, etc.).
+        """,
+        0: """
+        This zero rate applies to certain essential goods and services,
+        such as most food items (except for those subject to the 13.5% rate),
+        children's clothing and footwear, oral medicines, and exports.
+        """
+    }
+    print("\n\tPlease check which tax rate applies if you are unsure\n")
+    for k, v in irish_vat_rates.items():
+        print("\t" + "*"*70)
+        print(f"\t{k}%{v}")
+
+
+
 def get_current_date_and_time():
     """
     Returns the current date and time to accurately log a transaction.
@@ -69,7 +108,8 @@ def main():
     """
     Main function
     """
-    request_input_from_user()
+    # request_input_from_user()
+    show_details_on_vat()
 
 
 main()
