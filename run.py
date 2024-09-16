@@ -14,16 +14,23 @@ GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 PURCHASES_SHEET = GSPREAD_CLIENT.open('vat_purchases')
 SALES_SHEET = GSPREAD_CLIENT.open('vat_sales')
 
-purchases = PURCHASES_SHEET.worksheet("January")
-sales = SALES_SHEET.worksheet("January")
 
-purchases_data = purchases.get_all_values()
-# print("\npurchases_data:")
-# print(purchases_data)
+def get_current_purchases_worksheet(month):
+    """
+    Returns purchases data for a given month
+    """
+    purchases = PURCHASES_SHEET.worksheet(month)
+    purchases_data = purchases.get_all_values()
+    return purchases_data
 
-sales_data = sales.get_all_values()
-# print("\nsales_data:")
-# print(sales_data)
+
+def get_current_sales_worksheet(month):
+    """
+    Return sales data for a given month
+    """
+    sales = SALES_SHEET.worksheet(month)
+    sales_data = sales.get_all_values()
+    return sales_data
 
 
 def show_details_on_vat():
@@ -86,7 +93,6 @@ def get_month():
     return month
 
 
-
 def print_menu():
     """
     Prints a menu requesting a user to decide whether they
@@ -122,7 +128,16 @@ def main():
     # print(date)
     # print(time)
     month = get_month()
-    print(month)
+    # print(month)
+    month = "January"
+
+    purchases_data = get_current_purchases_worksheet(month)
+    print("\npurchases_data:")
+    print(purchases_data)
+
+    sales_data = get_current_sales_worksheet(month)
+    print("\nsales_data:")
+    print(sales_data)
 
 
 main()
