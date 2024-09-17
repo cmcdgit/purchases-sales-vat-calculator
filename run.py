@@ -93,51 +93,81 @@ def get_month():
     return month
 
 
+def handle_user_choice(choice, menu_options):
+    """
+    Determines worksheet to return or whether to exit
+    """
+    # print(menu_options.keys())
+
+    if choice not in menu_options.keys():
+        print("if")
+        return False
+    else:
+        print("else")
+        return menu_options[choice]
+
+
+
+
+def request_input_from_user():
+    """
+    Ask the user to make a selection
+    """
+    user_choice = input("\nPlease make a selection:\n")
+    return user_choice
+
+
 def print_menu():
     """
     Prints a menu requesting a user to decide whether they
     wish to update the purchases or sales google sheet
     """
+    menu_options = {
+        "1": "Sales",
+        "2": "Purchases",
+        "x": "Exit"
+    }
+
+    date, time = get_current_date_and_time()
+    print(f"\n{date} - {time}")
     print("\nPurchases and sales VAT calculator for self assessment")
     print("")
     print("Select")
     print("")
-    print("1 - Sales")
-    print("2 - Purchases")
-    print("")
-    print("X - Exit")
+    for k, v in menu_options.items():
+        print(f"{k} - {v}")
     print("")
 
-# todo: confirm if this can serve for all inputted data or might need to be integrated with print_menu()
-def request_input_from_user():
-    """
-    Ask the user to make a selection
-    """
-    print_menu()
-    user_choice = input("\nPlease make a selection:\n")
-    print(f"\nYou chose option {user_choice}")
+    return menu_options
 
 
 def main():
     """
     Main function
     """
-    # request_input_from_user()
+    menu_options = print_menu()
+    choice = request_input_from_user()
+    return_value = False
+    while not return_value:
+        return_value = handle_user_choice(choice, menu_options)
+
+    print(return_value)
+
     # show_details_on_vat()
     # date, time = get_current_date_and_time()
     # print(date)
     # print(time)
     month = get_month()
     # print(month)
-    month = "January"
+    # month = "January"
 
-    purchases_data = get_current_purchases_worksheet(month)
-    print("\npurchases_data:")
-    print(purchases_data)
+    # purchases_data = get_current_purchases_worksheet(month)
+    # print("\npurchases_data:")
+    # print(purchases_data)
 
-    sales_data = get_current_sales_worksheet(month)
-    print("\nsales_data:")
-    print(sales_data)
+    # sales_data = get_current_sales_worksheet(month)
+    # print("\nsales_data:")
+    # print(sales_data)
 
 
 main()
