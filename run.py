@@ -1,3 +1,5 @@
+import sys
+from time import sleep
 import datetime
 import gspread
 from google.oauth2.service_account import Credentials
@@ -15,22 +17,18 @@ PURCHASES_SHEET = GSPREAD_CLIENT.open('vat_purchases')
 SALES_SHEET = GSPREAD_CLIENT.open('vat_sales')
 
 
-def get_current_purchases_worksheet(month):
+def get_selected_worksheet(sheet, month):
     """
-    Returns purchases data for a given month
+    Return data for selected sheet purchases/sales for a given month
     """
-    purchases = PURCHASES_SHEET.worksheet(month)
-    purchases_data = purchases.get_all_values()
-    return purchases_data
+    if sheet == "purchases":
+        sheet = PURCHASES_SHEET
+    else:
+        sheet = SALES_SHEET
 
-
-def get_current_sales_worksheet(month):
-    """
-    Return sales data for a given month
-    """
-    sales = SALES_SHEET.worksheet(month)
-    sales_data = sales.get_all_values()
-    return sales_data
+    data = sheet.worksheet(month)
+    values = data.get_all_values()
+    return values
 
 
 def show_details_on_vat():
@@ -71,7 +69,6 @@ def show_details_on_vat():
         print(f"\t{k}%{v}")
 
 
-
 def get_current_date_and_time():
     """
     Returns the current date and time to accurately log a transaction.
@@ -91,22 +88,6 @@ def get_month():
 
     month = now.strftime("%B")
     return month
-
-
-def handle_user_choice(choice, menu_options):
-    """
-    Determines worksheet to return or whether to exit
-    """
-    # print(menu_options.keys())
-
-    if choice not in menu_options.keys():
-        print("if")
-        return False
-    else:
-        print("else")
-        return menu_options[choice]
-
-
 
 
 def request_input_from_user():
@@ -145,29 +126,26 @@ def main():
     """
     Main function
     """
-    menu_options = print_menu()
-    choice = request_input_from_user()
-    return_value = False
-    while not return_value:
-        return_value = handle_user_choice(choice, menu_options)
+    while True:
+        menu_options = print_menu()
+        choice = request_input_from_user()
 
-    print(return_value)
+        if choice.lower() in menu_options or choice.upper() in menu_options:
+            if choice.lower() == "x":
+                print("Exiting program, goodbye...")
+                sleep(3)
+                sys.exit(0)
+
+            else:
+                month = get_month()
+                selection = menu_options[choice].lower()
+                return_values = get_selected_worksheet(selection, month)
+
+            break
 
     # show_details_on_vat()
     # date, time = get_current_date_and_time()
-    # print(date)
-    # print(time)
-    month = get_month()
-    # print(month)
-    # month = "January"
-
-    # purchases_data = get_current_purchases_worksheet(month)
-    # print("\npurchases_data:")
-    # print(purchases_data)
-
-    # sales_data = get_current_sales_worksheet(month)
-    # print("\nsales_data:")
-    # print(sales_data)
+    print(return_values)
 
 
 main()
