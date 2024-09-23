@@ -1,4 +1,5 @@
 import sys
+import os
 from time import sleep
 import datetime
 import gspread
@@ -29,6 +30,32 @@ def get_selected_worksheet(sheet, month):
     data = sheet.worksheet(month)
     values = data.get_all_values()
     return values
+
+
+def print_selected_menu(heading, menu_options):
+    """
+    Prints a menu requesting a user to decide whether they
+    wish to update the purchases or sales google sheet.
+    Reprint the menu if a user doesn't select a valid option
+
+    Returns: choice
+    """
+
+    print('\n' + '*'*70)
+    print(f"\n\t{heading}")
+    print('\n' + '*'*70)
+    print("")
+    print("Select")
+    print("")
+    for k, v in menu_options.items():
+        print(f"\t{k} - {v}")
+    print("")
+
+    choice = None
+    while choice not in menu_options:
+        choice = request_input_from_user()
+
+    return choice
 
 
 def show_details_on_vat():
@@ -94,113 +121,90 @@ def request_input_from_user():
     """
     Ask the user to make a selection
     """
-    user_choice = input("\nPlease make a selection:\n")
+    print("\nChoose an option:\n")
+    user_choice = input().lower()
     return user_choice
 
 
-def print_selected_menu(menu, heading, menu_options):
+def main_menu():
     """
-    Prints a menu requesting a user to decide whether they
-    wish to update the purchases or sales google sheet
-    """
-    choice = None
-    while choice not in menu_options:
-        print('\n' + '*'*70)
-        print(f"\n\t{heading}")
-        print('\n' + '*'*70)
-        print("")
-        print("Select")
-        print("")
-        for k, v in menu_options.items():
-            print(f"\t{k} - {v}")
-        print("")
-        choice = request_input_from_user()
+    Calls the generic print_selected_menu function with
+    main_menu specific options, heading, and
 
-    return (menu, choice.lower(), menu_options)
-
-
-def print_main_menu():
+    Returns what print_selected_menu() returns
+     - (menu, choice.lower(), menu_options)
     """
-    Prints a menu requesting a user to decide whether they
-    wish to update the purchases or sales google sheet
-    """
-    main_menu_options = {
+
+    heading = "Purchases and sales VAT calculator for self assessment"
+    menu_options = {
         "1": "Sales",
         "2": "Purchases",
         "x": "Exit"
     }
 
-    heading = "Purchases and sales VAT calculator for self assessment"
     date, time = get_current_date_and_time()
     print(f"\n{date} - {time}")
 
-    return print_selected_menu("main_menu", heading, main_menu_options)
+    choice = print_selected_menu(heading, menu_options)
+
+    if choice.strip() == "1":
+        sales_menu()
+    if choice.strip() == "2":
+        purchases_menu()
 
 
-def print_sales_menu():
+def sales_menu():
     """
-    Prints a menu of options relating to the sales sheet for a user wish to choose from
+    Calls the generic print_selected_menu function with
+    sales_menu specific options, heading, and
+
+    Returns what print_selected_menu() returns
+     - (menu, choice.lower(), menu_options)
     """
+
+    heading = "Sales menu options"
     sales_menu_options = {
         "1": "Update sales sheet",
         "2": "Print entire sheet",
         "x": "Return to main menu"
     }
 
-    heading = "Sales menu options"
+    choice = print_selected_menu(heading, sales_menu_options)
 
-    return print_selected_menu("sales_menu", heading, sales_menu_options)
+    if choice.strip() == "1":
+        sales_menu()
+    if choice.strip() == "x":
+        main_menu()
 
 
-def print_purchases_menu():
+def purchases_menu():
     """
-    Prints a menu of options relating to the purchases sheet for a user wish to choose from
-    """
+    Calls the generic print_selected_menu function with
+    purchases_menu specific options, heading, and
+
+    Returns what print_selected_menu() returns
+     - (menu, choice.lower(), menu_options)
+     """
+
+    heading = "Purchases menu options"
     purchases_menu_options = {
-        "1": "Update purchases sheet",
+        "1": "Add new purchase",
         "2": "Print entire sheet",
         "x": "Return to main menu"
     }
 
-    heading = "Purchases menu options"
+    choice = print_selected_menu(heading, purchases_menu_options)
 
-    return print_selected_menu("purchases_menu", heading, purchases_menu_options)
-
-
-def handle_main_menu_choices(choice, menu_options):
-
-    if choice in menu_options:
-        if choice == "x":
-            print("Exiting program, goodbye...")
-            sleep(3)
-            sys.exit(0)
-
-        else:
-            month = get_month()
-            selection = menu_options[choice].lower()
-
-            if selection == "purchases":
-                print_purchases_menu()
-            elif selection == "sales":
-                print_sales_menu()
+    if choice.strip() == "1":
+        sales_menu()
+    if choice.strip() == "x":
+        main_menu()
 
 
 def main():
     """
     Main function
     """
-    menu, choice, menu_options = print_main_menu()
-
-    if menu == "main_menu":
-        handle_main_menu_choices(choice, menu_options)
-
-
-
-                # break
-                # return_values = get_selected_worksheet(selection, month)
-        # print(f"\n\n{return_values}\n\n")
-            # break
-    # show_details_on_vat()
-    # date, time = get_current_date_and_time()
+    main_menu()
 
 main()
