@@ -111,6 +111,8 @@ def show_details_on_vat():
         print("\t" + "*"*70)
         print(f"\t{k}%{v}")
 
+    input("\n\tPress Enter to continue: ")
+
 
 def get_selected_worksheet(sheet, month):
     """
@@ -172,6 +174,81 @@ def display_countdown(menu):
     print()
 
 
+def get_length_of_longest_q(questions):
+    return len(sorted(questions, key=len, reverse=True)[0])
+
+
+def request_new_purchases_transaction():
+    pass
+
+
+def request_new_sales_transaction(details=None, total_price_including_vat=None, vat_rate=None):
+    clear_screen()
+
+    print('\n' + '*'*70)
+    print(f"\n\tAdd new sales transaction")
+    print('\n' + '*'*70)
+    print("")
+
+    # Questions as variables so size can be determined to neatly display output
+    details_q = "Details"
+    totals_q = "Total including VAT:"
+    vat_rate_q = "Which VAT rate applies? (Press R for more details)"
+
+    required_space = 4
+    width = get_length_of_longest_q([details_q, totals_q, vat_rate_q]) + required_space
+
+
+    if details is None:
+        details = input(f"{details_q}" + " "*(width - len(details_q)))
+    else:
+        print(f"{details_q}" + " "*(width - len(details_q)) + f"{details}")
+
+    if total_price_including_vat is None:
+        total_price_including_vat = input(f"{totals_q}" + " "*(width - len(totals_q)) + "€")
+    else:
+        print(f"{totals_q}" + " "*(width - len(totals_q)) + f"€{total_price_including_vat}")
+
+    if vat_rate is None:
+        vat_rate = input(f"{vat_rate_q}" + " "*(width - len(vat_rate_q)))
+
+        if vat_rate.lower().strip() == "r" or vat_rate not in ["23", "13.5", "9", "4.8", "0"]:
+            show_details_on_vat()
+            sys.stdout.flush()
+            request_new_sales_transaction(details=details, total_price_including_vat=total_price_including_vat, vat_rate=None)
+    else:
+        print(f"{vat_rate_q}" + " "*(width - len(vat_rate_q)) + f"{vat_rate}")
+
+
+    print(f"{details},{total_price_including_vat},{vat_rate}")
+
+
+
+
+def add_new_transaction(sheet):
+    if sheet == "purchases":
+        request_new_purchases_transaction()
+    else:
+        request_new_sales_transaction()
+
+
+def edit_transaction(sheet):
+    pass
+
+
+def display_all_transactions_for_current_month(sheet):
+    pass
+
+
+def display_all_transactions_for_a_selected_month(sheet):
+    pass
+
+
+def create_new_sheet_for_current_month(sheet):
+    pass
+
+
+
 def main_menu():
     """
     Calls the generic print_selected_menu function with
@@ -203,34 +280,36 @@ def sales_menu():
     sales_menu specific options, heading, and handles
     user input
     """
-
+    sheet = "sales"
     menu = "sales menu"
     heading = "Sales menu options"
     sales_menu_options = {
         "1": "Add a new transaction",
         "2": "Edit a transaction",
         "3": "Display all transactions for the current month",
-        "4": "Display all transactions for a given month",
-        "5": "Create a new sales sheet for the current month (if none yet exists)",
-        "6": "Show details on local VAT rates",
+        "4": "Display last 7 transactions for the current month",
+        "5": "Display all transactions for a given month",
+        "6": "Create a new sales sheet for the current month (if none yet exists)",
+        "7": "Show details on local VAT rates",
         "x": "Return to main menu"
     }
 
     choice = print_selected_menu(heading, sales_menu_options)
 
     if choice == "1":
-        add_new_sales_transaction()
+        add_new_transaction(sheet)
     if choice == "2":
-        edit_sales_transaction()
+        edit_transaction(sheet)
     if choice == "3":
-        display_all_sales_transaction_for_current_month()
+        display_all_transactions_for_current_month(sheet)
     if choice == "4":
-        display_all_sales_transaction_for_a_selected_month()
+        display_last_7_transactions_for_current_month(sheet)
     if choice == "5":
-        create_new_sales_sheet_for_current_month()
+        display_all_transactions_for_a_selected_month(sheet)
     if choice == "6":
+        create_new_sheet_for_current_month(sheet)
+    if choice == "7":
         show_details_on_vat()
-        display_countdown(menu)
         sales_menu()
 
     if choice == "x":
@@ -244,6 +323,7 @@ def purchases_menu():
     user input
      """
 
+    sheet = "purchases"
     menu = "purchases menu"
     heading = "Purchases menu options"
     purchases_menu_options = {
