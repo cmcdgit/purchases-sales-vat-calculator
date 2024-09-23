@@ -18,18 +18,25 @@ PURCHASES_SHEET = GSPREAD_CLIENT.open('vat_purchases')
 SALES_SHEET = GSPREAD_CLIENT.open('vat_sales')
 
 
-def get_selected_worksheet(sheet, month):
-    """
-    Return data for selected sheet purchases/sales for a given month
-    """
-    if sheet == "purchases":
-        sheet = PURCHASES_SHEET
-    else:
-        sheet = SALES_SHEET
 
-    data = sheet.worksheet(month)
-    values = data.get_all_values()
-    return values
+# functions for handling output/input
+def clear_screen():
+    """
+    Function to clear the screen so newly display data can be more easily read
+    """
+    os.system('clear')
+
+
+def typewriter_print(print_statement):
+    """
+    Function to output text to mimic typewriter output speeds
+    """
+    for char in print_statement:
+        sleep(0.03)
+        sys.stdout.write(char)
+        sys.stdout.flush()
+
+    print()
 
 
 def print_selected_menu(heading, menu_options):
@@ -40,6 +47,8 @@ def print_selected_menu(heading, menu_options):
 
     Returns: choice
     """
+
+    clear_screen()
 
     print('\n' + '*'*70)
     print(f"\n\t{heading}")
@@ -96,6 +105,20 @@ def show_details_on_vat():
         print(f"\t{k}%{v}")
 
 
+def get_selected_worksheet(sheet, month):
+    """
+    Return data for selected sheet purchases/sales for a given month
+    """
+    if sheet == "purchases":
+        sheet = PURCHASES_SHEET
+    else:
+        sheet = SALES_SHEET
+
+    data = sheet.worksheet(month)
+    values = data.get_all_values()
+    return values
+
+
 def get_current_date_and_time():
     """
     Returns the current date and time to accurately log a transaction.
@@ -121,7 +144,7 @@ def request_input_from_user():
     """
     Ask the user to make a selection
     """
-    print("\nChoose an option:\n")
+    typewriter_print("\nChoose an option:\n")
     user_choice = input().lower()
     return user_choice
 
