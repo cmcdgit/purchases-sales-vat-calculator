@@ -16,7 +16,8 @@ SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 PURCHASES_SHEET = GSPREAD_CLIENT.open('vat_purchases')
 SALES_SHEET = GSPREAD_CLIENT.open('vat_sales')
-
+vat_rate = None
+total_price_including_vat = None
 
 
 # functions for handling output/input
@@ -110,8 +111,26 @@ def show_details_on_vat():
     for k, v in irish_vat_rates.items():
         print("\t" + "*"*70)
         print(f"\t{k}%{v}")
+        sleep(1.5)
 
     input("\n\tPress Enter to continue: ")
+
+
+def request_user_enters_numeric_value():
+    """
+    Request user enters a numeric value
+    """
+    typewriter_print("\n\n\tPlease check that the total price is numeric\n")
+
+    input("\n\tPress Enter to continue: ")
+
+
+def request_user_enters_valid_tax_rate():
+    """
+    Request user enters a valid tax rate
+    """
+    typewriter_print("\n\n\tPlease check this is a correct tax rate\n")
+    sleep(2)
 
 
 def get_selected_worksheet(sheet, month):
@@ -182,7 +201,9 @@ def request_new_purchases_transaction():
     pass
 
 
-def request_new_sales_transaction(details=None, total_price_including_vat=None, vat_rate=None):
+def request_new_sales_transaction(details=None, price_including_vat=None, rate=None):
+    global total_price_including_vat
+    global vat_rate
     clear_screen()
 
     print('\n' + '*'*70)
@@ -193,11 +214,13 @@ def request_new_sales_transaction(details=None, total_price_including_vat=None, 
     # Questions as variables so size can be determined to neatly display output
     details_q = "Details"
     totals_q = "Total including VAT:"
-    vat_rate_q = "Which VAT rate applies? (Press R for more details)"
+    vat_rate_q = "Which VAT rate applies? (Press Enter for more details)"
 
     required_space = 4
     width = get_length_of_longest_q([details_q, totals_q, vat_rate_q]) + required_space
 
+    vat_rate = rate
+    total_price_including_vat = price_including_vat
 
     if details is None:
         details = input(f"{details_q}" + " "*(width - len(details_q)))
@@ -206,21 +229,27 @@ def request_new_sales_transaction(details=None, total_price_including_vat=None, 
 
     if total_price_including_vat is None:
         total_price_including_vat = input(f"{totals_q}" + " "*(width - len(totals_q)) + "€")
+
+        if not total_price_including_vat.isnumeric():
+            request_user_enters_numeric_value()
+            request_new_sales_transaction(details=details)
     else:
         print(f"{totals_q}" + " "*(width - len(totals_q)) + f"€{total_price_including_vat}")
 
     if vat_rate is None:
         vat_rate = input(f"{vat_rate_q}" + " "*(width - len(vat_rate_q)))
 
-        if vat_rate.lower().strip() == "r" or vat_rate not in ["23", "13.5", "9", "4.8", "0"]:
+        if vat_rate in ["23", "13.5", "9", "4.8", "0"]:
+            pass
+        else:
+            request_user_enters_valid_tax_rate()
             show_details_on_vat()
-            sys.stdout.flush()
-            request_new_sales_transaction(details=details, total_price_including_vat=total_price_including_vat, vat_rate=None)
+            request_new_sales_transaction(details=details, price_including_vat=total_price_including_vat)
+
     else:
-        print(f"{vat_rate_q}" + " "*(width - len(vat_rate_q)) + f"{vat_rate}")
+        print(f"{vat_rate_q}" + " "*(width - len(vat_rate_q)) + f"{vat_rate}%")
 
-
-    print(f"{details},{total_price_including_vat},{vat_rate}")
+    return (details, total_price_including_vat, vat_rate)
 
 
 
@@ -229,7 +258,8 @@ def add_new_transaction(sheet):
     if sheet == "purchases":
         request_new_purchases_transaction()
     else:
-        request_new_sales_transaction()
+        details, total_price_including_vat, vat_rate = request_new_sales_transaction()
+        print(f"{details},{total_price_including_vat},{vat_rate}")
 
 
 def edit_transaction(sheet):
