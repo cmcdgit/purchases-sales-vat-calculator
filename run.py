@@ -60,8 +60,12 @@ def print_selected_menu(heading, menu_options):
         print(f"\t{k} - {v}")
     print("")
 
-    choice = None
+    choice = request_input_from_user()
+
     while choice not in menu_options:
+        print("You have selected an option that does not exist, please try again...")
+        sleep(2)
+        print_selected_menu(heading, menu_options)
         choice = request_input_from_user()
 
     return choice
@@ -99,7 +103,10 @@ def show_details_on_vat():
         children's clothing and footwear, oral medicines, and exports.
         """
     }
-    print("\n\tPlease check which tax rate applies if you are unsure\n")
+
+    clear_screen()
+
+    typewriter_print("\n\tPlease check which tax rate applies if you are unsure\n")
     for k, v in irish_vat_rates.items():
         print("\t" + "*"*70)
         print(f"\t{k}%{v}")
@@ -121,7 +128,7 @@ def get_selected_worksheet(sheet, month):
 
 def get_current_date_and_time():
     """
-    Returns the current date and time to accurately log a transaction.
+    Returns the current date and time (formatted) to accurately log a transaction.
     """
     now = datetime.datetime.now()
 
@@ -143,19 +150,33 @@ def get_month():
 def request_input_from_user():
     """
     Ask the user to make a selection
+
+    Returns: user_choice in lowercase, and stripped of whitespace
     """
     typewriter_print("\nChoose an option:\n")
-    user_choice = input().lower()
+    user_choice = input().lower().strip()
+
     return user_choice
+
+
+def display_countdown(menu):
+    """
+    Function to show a countdown for temporarily displayed info.
+    """
+    counter = 10
+    print(f"Returning to the {menu} in {counter} seconds")
+    for i in range(counter, -1, -1):
+        print("."*i + str(i))
+        sleep(1)
+
+    print()
 
 
 def main_menu():
     """
     Calls the generic print_selected_menu function with
-    main_menu specific options, heading, and
-
-    Returns what print_selected_menu() returns
-     - (menu, choice.lower(), menu_options)
+    main_menu specific options, heading, and handles
+    user input
     """
 
     heading = "Purchases and sales VAT calculator for self assessment"
@@ -170,57 +191,78 @@ def main_menu():
 
     choice = print_selected_menu(heading, menu_options)
 
-    if choice.strip() == "1":
+    if choice == "1":
         sales_menu()
-    if choice.strip() == "2":
+    if choice == "2":
         purchases_menu()
 
 
 def sales_menu():
     """
     Calls the generic print_selected_menu function with
-    sales_menu specific options, heading, and
-
-    Returns what print_selected_menu() returns
-     - (menu, choice.lower(), menu_options)
+    sales_menu specific options, heading, and handles
+    user input
     """
 
+    menu = "sales menu"
     heading = "Sales menu options"
     sales_menu_options = {
-        "1": "Update sales sheet",
-        "2": "Print entire sheet",
+        "1": "Add a new transaction",
+        "2": "Edit a transaction",
+        "3": "Display all transactions for the current month",
+        "4": "Display all transactions for a given month",
+        "5": "Create a new sales sheet for the current month (if none yet exists)",
+        "6": "Show details on local VAT rates",
         "x": "Return to main menu"
     }
 
     choice = print_selected_menu(heading, sales_menu_options)
 
-    if choice.strip() == "1":
+    if choice == "1":
+        add_new_sales_transaction()
+    if choice == "2":
+        edit_sales_transaction()
+    if choice == "3":
+        display_all_sales_transaction_for_current_month()
+    if choice == "4":
+        display_all_sales_transaction_for_a_selected_month()
+    if choice == "5":
+        create_new_sales_sheet_for_current_month()
+    if choice == "6":
+        show_details_on_vat()
+        display_countdown(menu)
         sales_menu()
-    if choice.strip() == "x":
+
+    if choice == "x":
         main_menu()
 
 
 def purchases_menu():
     """
     Calls the generic print_selected_menu function with
-    purchases_menu specific options, heading, and
-
-    Returns what print_selected_menu() returns
-     - (menu, choice.lower(), menu_options)
+    purchases_menu specific options, heading, and handles
+    user input
      """
 
+    menu = "purchases menu"
     heading = "Purchases menu options"
     purchases_menu_options = {
-        "1": "Add new purchase",
-        "2": "Print entire sheet",
+        "1": "Switch to sale menu",
+        "7": "Show details on local VAT rates",
         "x": "Return to main menu"
     }
 
     choice = print_selected_menu(heading, purchases_menu_options)
 
-    if choice.strip() == "1":
+    if choice == "1":
         sales_menu()
-    if choice.strip() == "x":
+
+    if choice == "7":
+        show_details_on_vat()
+        display_countdown(menu)
+        purchases_menu()
+
+    if choice == "x":
         main_menu()
 
 
@@ -229,5 +271,6 @@ def main():
     Main function
     """
     main_menu()
+
 
 main()
