@@ -120,21 +120,16 @@ def show_details_on_vat():
     input("\n\tPress Enter to continue: ")
 
 
-def request_user_enters_numeric_value():
+def display_error_message(error_message, wait_time):
     """
     Request user enters a numeric value
     """
-    print(f"\n\n\t" + f"{Fore.RED}Please check that the total price is a number\n")
+    print(f"\n\n\t" + f"{Fore.RED}{error_message}\n")
 
-    input("\n\tPress Enter to continue: ")
-
-
-def request_user_enters_valid_tax_rate():
-    """
-    Request user enters a valid tax rate
-    """
-    print(f"\n\n\t" + f"{Fore.RED}Please check this is a valid tax rate\n")
-    sleep(2)
+    if wait_time:
+        sleep(wait_time)
+    else:
+        input("\n\tPress Enter to continue: ")
 
 
 def get_selected_worksheet(sheet, month):
@@ -198,6 +193,10 @@ def display_countdown(menu):
 
 
 def get_length_of_longest_q(questions):
+    """
+    Returns the longest string in a list of strings,
+    useful for formatting out and improving readability
+    """
     return len(sorted(questions, key=len, reverse=True)[0])
 
 
@@ -206,14 +205,19 @@ def request_new_purchases_transaction():
 
 
 def request_new_sales_transaction(details=None, price_including_vat=None, rate=None):
+    """
+    Function to collect the info needed to add a new sales transaction to the google sheet
+    """
     global total_price_including_vat
     global vat_rate
 
     clear_screen()
+    new_sale_banner = text2art("Add new sale")
+    blue_color = Fore.BLUE
 
-    print('\n' + f'{Fore.BLUE}*'*84)
-    print(f"\n\t{text2art("Add new sale")}")
-    print('\n' + f'{Fore.BLUE}*'*84)
+    print('\n' + f'{blue_color}*'*84)
+    print(f"\n\t{new_sale_banner}")
+    print('\n' + f'{blue_color}*'*84)
     print("")
     print("Please provide details of the new sales transaction here:\n\n")
 
@@ -222,29 +226,45 @@ def request_new_sales_transaction(details=None, price_including_vat=None, rate=N
     totals_q = "Total including VAT:"
     vat_rate_q = "Which VAT rate applies? (Press Enter for more details)"
 
-    required_space = 4
-    width = get_length_of_longest_q([details_q, totals_q, vat_rate_q]) + required_space
+    # required_space = 4
+    width = get_length_of_longest_q([details_q, totals_q, vat_rate_q])
+    # + required_space
 
     space = "  "
+    formatted_details_q = f"{details_q}" + "."*(width - len(details_q)) + space
+    formatted_price_q = f"{totals_q}" + "."*(width - len(totals_q)) + space + "€"
+    formatted_vat_rate_q = f"{vat_rate_q}" + "."*(width - len(vat_rate_q)) + space
+
     vat_rate = rate
     total_price_including_vat = price_including_vat
+    is_float = False
 
     if details is None:
-        details = input(f"{details_q}" + "."*(width - len(details_q)) + space)
+        details = input(formatted_details_q)
     else:
-        print(f"{details_q}" + "."*(width - len(details_q)) + space + f"{details}")
+        print(formatted_details_q + f"{details}")
 
     if total_price_including_vat is None:
-        total_price_including_vat = input(f"{totals_q}" + "."*(width - len(totals_q)) + space + "€")
+        total_price_including_vat = input(formatted_price_q)
 
-        if not total_price_including_vat.isnumeric():
-            request_user_enters_numeric_value()
+        try:
+            total_price_including_vat = float(total_price_including_vat)
+            is_float = True
+
+        except ValueError:
+            display_error_message("Please check that the total price is a number", 0)
+            request_new_sales_transaction(details=details)
+
+        if not is_float:
+            display_error_message("Please check that the total price is a number", 0)
             request_new_sales_transaction(details=details)
     else:
-        print(f"{totals_q}" + "."*(width - len(totals_q)) + space + f"€{total_price_including_vat}")
+        print(formatted_price_q + str(total_price_including_vat))
 
     if vat_rate is None:
-        vat_rate = input(f"{vat_rate_q}" + "."*(width - len(vat_rate_q)) + space)
+        vat_rate = input(formatted_vat_rate_q)
+        if "%" in vat_rate:
+            vat_rate = vat_rate.replace("%", "")
 
         if vat_rate in ["23", "13.5", "9", "4.8", "0"]:
             pass
@@ -252,12 +272,12 @@ def request_new_sales_transaction(details=None, price_including_vat=None, rate=N
             show_details_on_vat()
             request_new_sales_transaction(details=details, price_including_vat=total_price_including_vat)
         else:
-            request_user_enters_valid_tax_rate()
+            display_error_message("Please check this is a valid tax rate", 2)
             show_details_on_vat()
             request_new_sales_transaction(details=details, price_including_vat=total_price_including_vat)
 
     else:
-        print(f"{vat_rate_q}" + "."*(width - len(vat_rate_q)) + space + f"{vat_rate}%")
+        print(formatted_vat_rate_q + f"{vat_rate}%")
 
     return (details, total_price_including_vat, vat_rate)
 
