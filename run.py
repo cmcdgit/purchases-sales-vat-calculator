@@ -113,8 +113,8 @@ def show_details_on_vat():
 
     typewriter_print("\n\tPlease check which tax rate applies if you are unsure\n")
     for k, v in irish_vat_rates.items():
-        print("\t" + "*"*70)
-        print(f"\t{k}%{v}")
+        print("\t" + "*"*80)
+        print(f"{Fore.LIGHTWHITE_EX}\t{k}%" + f"{Fore.BLUE}{v}")
         sleep(1.5)
 
     input("\n\tPress Enter to continue: ")
@@ -124,7 +124,7 @@ def request_user_enters_numeric_value():
     """
     Request user enters a numeric value
     """
-    typewriter_print("\n\n\tPlease check that the total price is numeric\n")
+    print(f"\n\n\t" + f"{Fore.RED}Please check that the total price is a number\n")
 
     input("\n\tPress Enter to continue: ")
 
@@ -133,7 +133,7 @@ def request_user_enters_valid_tax_rate():
     """
     Request user enters a valid tax rate
     """
-    typewriter_print("\n\n\tPlease check this is a correct tax rate\n")
+    print(f"\n\n\t" + f"{Fore.RED}Please check this is a valid tax rate\n")
     sleep(2)
 
 
@@ -225,35 +225,39 @@ def request_new_sales_transaction(details=None, price_including_vat=None, rate=N
     required_space = 4
     width = get_length_of_longest_q([details_q, totals_q, vat_rate_q]) + required_space
 
+    space = "  "
     vat_rate = rate
     total_price_including_vat = price_including_vat
 
     if details is None:
-        details = input(f"{details_q}" + " "*(width - len(details_q)))
+        details = input(f"{details_q}" + "."*(width - len(details_q)) + space)
     else:
-        print(f"{details_q}" + " "*(width - len(details_q)) + f"{details}")
+        print(f"{details_q}" + "."*(width - len(details_q)) + space + f"{details}")
 
     if total_price_including_vat is None:
-        total_price_including_vat = input(f"{totals_q}" + " "*(width - len(totals_q)) + "€")
+        total_price_including_vat = input(f"{totals_q}" + "."*(width - len(totals_q)) + space + "€")
 
         if not total_price_including_vat.isnumeric():
             request_user_enters_numeric_value()
             request_new_sales_transaction(details=details)
     else:
-        print(f"{totals_q}" + " "*(width - len(totals_q)) + f"€{total_price_including_vat}")
+        print(f"{totals_q}" + "."*(width - len(totals_q)) + space + f"€{total_price_including_vat}")
 
     if vat_rate is None:
-        vat_rate = input(f"{vat_rate_q}" + " "*(width - len(vat_rate_q)))
+        vat_rate = input(f"{vat_rate_q}" + "."*(width - len(vat_rate_q)) + space)
 
         if vat_rate in ["23", "13.5", "9", "4.8", "0"]:
             pass
+        elif vat_rate == None or vat_rate == "":
+            show_details_on_vat()
+            request_new_sales_transaction(details=details, price_including_vat=total_price_including_vat)
         else:
             request_user_enters_valid_tax_rate()
             show_details_on_vat()
             request_new_sales_transaction(details=details, price_including_vat=total_price_including_vat)
 
     else:
-        print(f"{vat_rate_q}" + " "*(width - len(vat_rate_q)) + f"{vat_rate}%")
+        print(f"{vat_rate_q}" + "."*(width - len(vat_rate_q)) + space + f"{vat_rate}%")
 
     return (details, total_price_including_vat, vat_rate)
 
