@@ -4,6 +4,8 @@ from time import sleep
 import datetime
 import gspread
 from google.oauth2.service_account import Credentials
+from art import *
+from colorama import Fore, Back, Style, init
 
 SCOPE = [
     "https://www.googleapis.com/auth/drive.file",
@@ -19,6 +21,8 @@ SALES_SHEET = GSPREAD_CLIENT.open('vat_sales')
 vat_rate = None
 total_price_including_vat = None
 
+init()
+init(autoreset=True)
 
 # functions for handling output/input
 def clear_screen():
@@ -51,14 +55,14 @@ def print_selected_menu(heading, menu_options):
 
     clear_screen()
 
-    print('\n' + '*'*70)
-    print(f"\n\t{heading}")
-    print('\n' + '*'*70)
+    print('\n' + f'{Fore.BLUE}*'*84)
+    print(f"\n\t{text2art(heading)}")
+    print('\n' + f'{Fore.BLUE}*'*84)
     print("")
     print("Select")
     print("")
     for k, v in menu_options.items():
-        print(f"\t{k} - {v}")
+        print(f"\t{k} - " + f"{Fore.BLUE}{v}")
     print("")
 
     choice = request_input_from_user()
@@ -204,12 +208,14 @@ def request_new_purchases_transaction():
 def request_new_sales_transaction(details=None, price_including_vat=None, rate=None):
     global total_price_including_vat
     global vat_rate
+
     clear_screen()
 
-    print('\n' + '*'*70)
-    print(f"\n\tAdd new sales transaction")
-    print('\n' + '*'*70)
+    print('\n' + f'{Fore.BLUE}*'*84)
+    print(f"\n\t{text2art("Add new sale")}")
+    print('\n' + f'{Fore.BLUE}*'*84)
     print("")
+    print("Please provide details of the new sales transaction here:\n\n")
 
     # Questions as variables so size can be determined to neatly display output
     details_q = "Details"
@@ -286,7 +292,7 @@ def main_menu():
     user input
     """
 
-    heading = "Purchases and sales VAT calculator for self assessment"
+    heading = "VAT Calculator"
     menu_options = {
         "1": "Sales",
         "2": "Purchases",
@@ -312,7 +318,7 @@ def sales_menu():
     """
     sheet = "sales"
     menu = "sales menu"
-    heading = "Sales menu options"
+    heading = "Sales"
     sales_menu_options = {
         "1": "Add a new transaction",
         "2": "Edit a transaction",
@@ -355,7 +361,7 @@ def purchases_menu():
 
     sheet = "purchases"
     menu = "purchases menu"
-    heading = "Purchases menu options"
+    heading = "Purchases"
     purchases_menu_options = {
         "1": "Switch to sale menu",
         "7": "Show details on local VAT rates",
