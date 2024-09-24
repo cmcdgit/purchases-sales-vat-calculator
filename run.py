@@ -24,6 +24,36 @@ total_price_including_vat = None
 init()
 init(autoreset=True)
 
+
+class colors:
+    blue = Fore.BLUE
+
+
+
+class sales_columns:
+    date = 0
+    details = 1
+    invoice_number = 2
+    total = 3
+    vat_23 = 4
+    vat_13_5 = 5
+    vat = 6
+    exempt = 7
+
+
+
+class purchases_columns:
+    date = 0
+    details = 1
+    invoice_number = 2
+    total = 3
+    resale_vat = 4
+    non_resale_vat = 5
+    intra_eu = 6
+    vat = 7
+
+
+
 # functions for handling output/input
 def clear_screen():
     """
@@ -55,14 +85,14 @@ def print_selected_menu(heading, menu_options):
 
     clear_screen()
 
-    print('\n' + f'{Fore.BLUE}*'*84)
+    print('\n' + f'{colors.blue}*'*84)
     print(f"\n\t{text2art(heading)}")
-    print('\n' + f'{Fore.BLUE}*'*84)
+    print('\n' + f'{colors.blue}*'*84)
     print("")
     print("Select")
     print("")
     for k, v in menu_options.items():
-        print(f"\t{k} - " + f"{Fore.BLUE}{v}")
+        print(f"\t{k} - " + f"{colors.blue}{v}")
     print("")
 
     choice = request_input_from_user()
@@ -132,7 +162,7 @@ def display_error_message(error_message, wait_time):
         input("\n\tPress Enter to continue: ")
 
 
-def get_selected_worksheet(sheet, month):
+def get_selected_worksheet(sheet):
     """
     Return data for selected sheet purchases/sales for a given month
     """
@@ -141,9 +171,9 @@ def get_selected_worksheet(sheet, month):
     else:
         sheet = SALES_SHEET
 
-    data = sheet.worksheet(month)
-    values = data.get_all_values()
-    return values
+    # data = sheet.worksheet(month)
+    # values = data.get_all_values()
+    return sheet
 
 
 def get_current_date_and_time():
@@ -192,12 +222,12 @@ def display_countdown(menu):
     print()
 
 
-def get_length_of_longest_q(questions):
+def get_length_of_longest_list_item(list_to_check):
     """
     Returns the longest string in a list of strings,
     useful for formatting out and improving readability
     """
-    return len(sorted(questions, key=len, reverse=True)[0])
+    return len(sorted(list_to_check, key=len, reverse=True)[0])
 
 
 def request_new_purchases_transaction():
@@ -213,11 +243,11 @@ def request_new_sales_transaction(details=None, price_including_vat=None, rate=N
 
     clear_screen()
     new_sale_banner = text2art("Add new sale")
-    blue_color = Fore.BLUE
 
-    print('\n' + f'{blue_color}*'*84)
+
+    print('\n' + f'{colors.blue}*'*84)
     print(f"\n\t{new_sale_banner}")
-    print('\n' + f'{blue_color}*'*84)
+    print('\n' + f'{colors.blue}*'*84)
     print("")
     print("Please provide details of the new sales transaction here:\n\n")
 
@@ -227,7 +257,7 @@ def request_new_sales_transaction(details=None, price_including_vat=None, rate=N
     vat_rate_q = "Which VAT rate applies? (Press Enter for more details)"
 
     # required_space = 4
-    width = get_length_of_longest_q([details_q, totals_q, vat_rate_q])
+    width = get_length_of_longest_list_item([details_q, totals_q, vat_rate_q])
     # + required_space
 
     space = "  "
@@ -237,7 +267,6 @@ def request_new_sales_transaction(details=None, price_including_vat=None, rate=N
 
     vat_rate = rate
     total_price_including_vat = price_including_vat
-    is_float = False
 
     if details is None:
         details = input(formatted_details_q)
@@ -249,20 +278,17 @@ def request_new_sales_transaction(details=None, price_including_vat=None, rate=N
 
         try:
             total_price_including_vat = float(total_price_including_vat)
-            is_float = True
 
         except ValueError:
             display_error_message("Please check that the total price is a number", 0)
             request_new_sales_transaction(details=details)
 
-        if not is_float:
-            display_error_message("Please check that the total price is a number", 0)
-            request_new_sales_transaction(details=details)
     else:
         print(formatted_price_q + str(total_price_including_vat))
 
     if vat_rate is None:
         vat_rate = input(formatted_vat_rate_q)
+
         if "%" in vat_rate:
             vat_rate = vat_rate.replace("%", "")
 
@@ -276,20 +302,61 @@ def request_new_sales_transaction(details=None, price_including_vat=None, rate=N
             show_details_on_vat()
             request_new_sales_transaction(details=details, price_including_vat=total_price_including_vat)
 
-    else:
-        print(formatted_vat_rate_q + f"{vat_rate}%")
+    # else:
+    #     print(formatted_vat_rate_q + f"{vat_rate}%")
 
     return (details, total_price_including_vat, vat_rate)
 
 
+def calculate_vat(total_price_including_vat, vat_rate):
+    """
+    Calculate appropriate vat and return a comma separated string for
+    updating the google sheet
+    """
+    vat_applicable = round(((float(total_price_including_vat) * float(vat_rate)) / 100), 2)
+
+    if vat_rate == "23":
+        return [vat_applicable, None, vat_applicable, None]
+
+    elif vat_rate == "13.5":
+        return [None, vat_applicable, vat_applicable, None]
+
+    elif vat_rate == "0":
+        return [None, None, None, total_price_including_vat]
+
+
+def generate_next_invoice_number(ledger, month):
+    """
+    Function to get the last invoice number on a google sheet and iterate by 1
+    """
+
+    all_data = ledger.worksheet(month).get_all_values()
+    last_row = all_data[-1]
+    last_invoice_number = last_row[sales_columns.invoice_number]
+    if str(last_invoice_number).isnumeric:
+        return int(last_invoice_number) + 1
 
 
 def add_new_transaction(sheet):
+    ledger = get_selected_worksheet(sheet)
+    month = get_month()
+
     if sheet == "purchases":
         request_new_purchases_transaction()
     else:
         details, total_price_including_vat, vat_rate = request_new_sales_transaction()
-        print(f"{details},{total_price_including_vat},{vat_rate}")
+        date, time = get_current_date_and_time()
+        invoice_number = generate_next_invoice_number(ledger, month)
+        formatted_vat_details = calculate_vat(total_price_including_vat, vat_rate)
+
+        formatted_row = [date, details,invoice_number,total_price_including_vat] + formatted_vat_details
+
+        try:
+            ledger.worksheet(month).append_row(formatted_row)
+        except FileNotFoundError as e:
+            print(f"Can't find file:\n{e}")
+
+        sales_menu()
 
 
 def edit_transaction(sheet):
@@ -297,7 +364,45 @@ def edit_transaction(sheet):
 
 
 def display_all_transactions_for_current_month(sheet):
-    pass
+    ledger = get_selected_worksheet(sheet)
+    month = get_month()
+
+    col_1 = ledger.worksheet(month).col_values(1)
+    col_2 = ledger.worksheet(month).col_values(2)
+    col_3 = ledger.worksheet(month).col_values(3)
+    col_4 = ledger.worksheet(month).col_values(4)
+    col_5 = ledger.worksheet(month).col_values(5)
+    col_6 = ledger.worksheet(month).col_values(6)
+    col_7 = ledger.worksheet(month).col_values(7)
+    col_8 = ledger.worksheet(month).col_values(8)
+
+    # all_cols = [row_1, row_2, row_3, row_4, row_5, row_6, row_7, row_8]
+
+    for i in range(8):
+        print(f"{col_1[i]} | {col_2[i]} | {col_3[i]} | {col_4[i]} | {col_5[i]} | {col_6[i]} | {col_7[i]} | {col_8[i]}")
+    # for row in all_rows:
+    #     length = get_length_of_longest_list_item(row)
+
+    #     for col in row:
+    #         all_cols.append(col)
+
+
+
+        # print(length)
+        # print(row)
+
+    # print(row_1)
+    # print(row_2)
+    # print(row_3)
+    # print(row_4)
+    # print(row_5)
+    # print(row_6)
+    # print(row_7)
+    # print(row_8)
+
+    # for row in all_data:
+    #     print(row)
+    input("\n\tPress Enter to continue: ")
 
 
 def display_all_transactions_for_a_selected_month(sheet):
@@ -306,7 +411,6 @@ def display_all_transactions_for_a_selected_month(sheet):
 
 def create_new_sheet_for_current_month(sheet):
     pass
-
 
 
 def main_menu():
@@ -362,6 +466,7 @@ def sales_menu():
         edit_transaction(sheet)
     if choice == "3":
         display_all_transactions_for_current_month(sheet)
+        sales_menu()
     if choice == "4":
         display_last_7_transactions_for_current_month(sheet)
     if choice == "5":
