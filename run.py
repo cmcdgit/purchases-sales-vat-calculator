@@ -28,6 +28,7 @@ init(autoreset=True)
 class colors:
     blue = Fore.BLUE
     green = Fore.GREEN
+    red = Fore.RED
     white = Fore.WHITE
 
 
@@ -155,11 +156,14 @@ def show_details_on_vat():
     input("\n\tPress Enter to continue: ")
 
 
-def display_message(message, wait_time=None):
+def display_message(message, wait_time=None, is_warning=True):
     """
     Request user enters a numeric value
     """
-    print(f"\n\n\t" + f"{Fore.RED}{message}\n")
+    if is_warning:
+        print(f"\n\n\t" + f"{colors.red}{message}\n")
+    else:
+        print(f"\n\n\t" + f"{colors.green}{message}\n")
 
     if wait_time:
         sleep(wait_time)
@@ -325,15 +329,15 @@ def calculate_vat(total_price_including_vat, vat_rate):
         return [0, 0, 0, total_price_including_vat]
 
 
-def generate_next_invoice_number(ledger, month):
+def generate_next_invoice_number(ledger):
     """
-    Function to get the last invoice number on a google sheet and iterate by 1
+    Function to get the last available invoice number on a google sheet and iterates it by 1
     """
 
     all_months = get_list_of_all_sheet_titles(ledger)
     number_of_available_months = len(all_months)
     all_months = reversed(all_months)
-    counter = 0
+    # counter = 0
 
     for month in all_months:
         all_data = ledger.worksheet(month).get_all_values()
@@ -343,27 +347,40 @@ def generate_next_invoice_number(ledger, month):
             if str(last_invoice_number).isnumeric:
                 return int(last_invoice_number) + 1
         except ValueError as e:
-            counter += 1
-            if counter == number_of_available_months:
-                display_message(f"There are no valid invoice numbers available on this sheet: \n{e}", 3)
+            pass
+            # counter += 1
+            # if counter == number_of_available_months:
+            #     display_message(f"There are no valid invoice numbers available on this sheet: {e}", 3)
 
 
-def add_new_transaction(sheet):
-    ledger = get_selected_worksheet(sheet)
+def create_sheet_if_not_available(sheet):
     month = get_month()
-
     available_months = get_list_of_all_sheet_titles(sheet)
 
     if month not in available_months:
         display_message(f"No sheet available for {month}", 1)
         create_new_sheet(sheet)
 
+
+
+def add_new_transaction(sheet):
+    """
+    Function to add a new transaction to a worksheet.
+    This function checks if a sheet for the current month is available &
+    generates it if necessary
+    """
+    ledger = get_selected_worksheet(sheet)
+
+    create_sheet_if_not_available(sheet)
+
     if sheet == "purchases":
         request_new_purchases_transaction()
     else:
         details, total_price_including_vat, vat_rate = request_new_sales_transaction()
         date, time = get_current_date_and_time()
-        invoice_number = generate_next_invoice_number(ledger, month)
+        invoice_number = generate_next_invoice_number(ledger)
+        if invoice_number is None or invoice_number == "":
+            invoice_number = input(f"{colors.red}\n\tNo invoice number available, please manually enter one: {colors.white}")
         formatted_vat_details = calculate_vat(total_price_including_vat, vat_rate)
 
         formatted_row = [date, details,invoice_number,total_price_including_vat] + formatted_vat_details
@@ -371,8 +388,10 @@ def add_new_transaction(sheet):
         try:
             month = get_month()
             ledger.worksheet(month).append_row(formatted_row)
+            display_message("Sheet updated successfully", 2, False)
+
         except FileNotFoundError as e:
-            print(f"Can't find file:\n{e}")
+            display_message(f"Can't find file: {e}", 3)
 
         sales_menu()
 
@@ -473,7 +492,7 @@ def create_new_sheet(sheet):
                 'green': 0.84313726,
                 'red': 0.7137255
             }})
-            display_message(f"Worksheet created for {month}", 2)
+            display_message(f"Worksheet created for {month}", 2, False)
         except FileExistsError as e:
             print(f"File already exists: \n{e}")
 
@@ -494,7 +513,7 @@ def create_new_sheet(sheet):
                     'green': 0.84313726,
                     'red': 0.7137255
             }})
-                display_message(f"Worksheet created for {new_month}", 2)
+                display_message(f"Worksheet created for {new_month}", 2, False)
 
             except FileNotFoundError as e:
                 print(f"Can't find file:\n{e}")
@@ -509,7 +528,6 @@ def create_new_sheet(sheet):
 
     else:
         display_message("Please check the value you selected!")
-
 
 
 def main_menu():
@@ -544,6 +562,84 @@ def main_menu():
         sys.exit(0)
 
 
+def get_total_transactions_for_month(sheet, available_months):
+    print(available_months)
+
+
+def get_total_vat_23_for_month(sheet, available_months):
+    pass
+
+
+def get_total_vat_13_5_for_month(sheet, available_months):
+    pass
+
+
+def get_total_vat_exempt_for_month(sheet, available_months):
+    pass
+
+
+def get_total_transactions_for_all_months(sheet, available_months):
+    pass
+
+
+def get_total_vat_23_for_all_months(sheet, available_months):
+    pass
+
+
+def get_total_vat_13_5_for_all_months(sheet, available_months):
+    pass
+
+
+def get_total_vat_exempt_for_all_months(sheet, available_months):
+    pass
+
+
+def totals_menu(sheet):
+    """
+    Calls the generic print selected_menu function with
+    totals specific options for a user to interogate the
+    data for a given month
+    """
+    available_months = get_list_of_all_sheet_titles(sheet)
+    menu = "totals menu"
+    heading = "Totals"
+    totals_menu_options = {
+        "1": "Month: Total transactions (including VAT)",
+        "2": "Month: Total VAT (23%)",
+        "3": "Month: Total VAT (13.5%)",
+        "4": "Month: Total of tax exempt sales",
+        "5": "Year to date: Transactions (including VAT)",
+        "6": "Year to date: VAT (23%)",
+        "7": "Year to date: VAT (13.5%)",
+        "8": "Year to date: Tax exempt sales",
+        "x": f"Back to {sheet} menu"
+    }
+
+    choice = print_selected_menu(heading, totals_menu_options)
+
+    if choice == "1":
+        get_total_transactions_for_month(sheet, available_months)
+    if choice == "2":
+        get_total_vat_23_for_month(sheet, available_months)
+    if choice == "3":
+        get_total_vat_13_5_for_month(sheet, available_months)
+    if choice == "4":
+        get_total_vat_exempt_for_month(sheet, available_months)
+    if choice == "5":
+        get_total_transactions_for_all_months(sheet, available_months)
+    if choice == "6":
+        get_total_vat_23_for_all_months(sheet, available_months)
+    if choice == "7":
+        get_total_vat_13_5_for_all_months(sheet, available_months)
+    if choice == "8":
+        get_total_vat_exempt_for_all_months(sheet, available_months)
+
+    if choice == "x":
+        if sheet == "sales":
+            sales_menu()
+        else:
+            purchases_menu()
+
 def sales_menu():
     """
     Calls the generic print_selected_menu function with
@@ -556,11 +652,12 @@ def sales_menu():
     sales_menu_options = {
         "1": "Add a new transaction",
         "2": "Edit a transaction (nw)",
-        "3": "Display all transactions for the current month",
-        "4": "Display last 7 transactions for the current month (nw)",
-        "5": "Display all transactions for a given month",
-        "6": "Create a new sales sheet for the current month (if none yet exists)",
-        "7": "Show details on local VAT rates",
+        "3": "Totals menu",
+        "4": "Display all transactions for the current month",
+        "5": "Display last 7 transactions for the current month (nw)",
+        "6": "Display all transactions for a given month",
+        "7": "Create a new sales sheet for the current month (if none yet exists)",
+        "8": "Show details on local VAT rates",
         "x": "Return to main menu"
     }
 
@@ -571,17 +668,19 @@ def sales_menu():
     if choice == "2":
         edit_transaction(sheet)
     if choice == "3":
+        totals_menu(sheet)
+    if choice == "4":
         display_all_transactions_for_month(sheet)
         sales_menu()
-    if choice == "4":
-        display_last_7_transactions_for_current_month(sheet)
     if choice == "5":
+        display_last_7_transactions_for_current_month(sheet)
+    if choice == "6":
         display_all_transactions_for_a_selected_month(sheet)
         sales_menu()
-    if choice == "6":
+    if choice == "7":
         create_new_sheet(sheet)
         sales_menu()
-    if choice == "7":
+    if choice == "8":
         show_details_on_vat()
         sales_menu()
 
