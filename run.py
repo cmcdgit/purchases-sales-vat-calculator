@@ -589,6 +589,10 @@ def get_total_vat_13_5_for_month(sheet):
     pass
 
 
+def get_total_vat_combined_for_month(sheet):
+    pass
+
+
 def get_total_vat_exempt_for_month(sheet):
     pass
 
@@ -602,6 +606,10 @@ def get_total_vat_23_for_all_months(sheet):
 
 
 def get_total_vat_13_5_for_all_months(sheet):
+    pass
+
+
+def get_total_vat_combined_for_all_months(sheet):
     pass
 
 
@@ -622,11 +630,13 @@ def totals_menu(sheet):
         "1": "Month: Total transactions (including VAT)",
         "2": "Month: Total VAT (23%)",
         "3": "Month: Total VAT (13.5%)",
-        "4": "Month: Total of tax exempt sales",
-        "5": "Year to date: Transactions (including VAT)",
-        "6": "Year to date: VAT (23%)",
-        "7": "Year to date: VAT (13.5%)",
-        "8": "Year to date: Tax exempt sales",
+        "4": "Month: Total VAT (combined)",
+        "5": "Month: Total of tax exempt sales",
+        "6": "Year to date: Transactions (including VAT)",
+        "7": "Year to date: VAT (23%)",
+        "8": "Year to date: VAT (13.5%)",
+        "9": "Year to date: Total VAT (combined)",
+        "10": "Year to date: Tax exempt sales",
         "x": f"Back to {sheet} menu"
     }
 
@@ -639,14 +649,18 @@ def totals_menu(sheet):
     if choice == "3":
         get_total_vat_13_5_for_month(sheet)
     if choice == "4":
-        get_total_vat_exempt_for_month(sheet)
+        get_total_vat_combined_for_month(sheet)
     if choice == "5":
-        get_total_transactions_for_all_months(sheet)
+        get_total_vat_exempt_for_month(sheet)
     if choice == "6":
-        get_total_vat_23_for_all_months(sheet)
+        get_total_transactions_for_all_months(sheet)
     if choice == "7":
-        get_total_vat_13_5_for_all_months(sheet)
+        get_total_vat_23_for_all_months(sheet)
     if choice == "8":
+        get_total_vat_13_5_for_all_months(sheet)
+    if choice == "9":
+        get_total_vat_combined_for_all_months(sheet)
+    if choice == "10":
         get_total_vat_exempt_for_all_months(sheet)
 
     if choice == "x":
