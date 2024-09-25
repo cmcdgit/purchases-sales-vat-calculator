@@ -20,6 +20,7 @@ PURCHASES_SHEET = GSPREAD_CLIENT.open('vat_purchases')
 SALES_SHEET = GSPREAD_CLIENT.open('vat_sales')
 vat_rate = None
 total_price_including_vat = None
+month = None
 
 init()
 init(autoreset=True)
@@ -348,9 +349,6 @@ def generate_next_invoice_number(ledger):
                 return int(last_invoice_number) + 1
         except ValueError as e:
             pass
-            # counter += 1
-            # if counter == number_of_available_months:
-            #     display_message(f"There are no valid invoice numbers available on this sheet: {e}", 3)
 
 
 def create_sheet_if_not_available(sheet):
@@ -562,35 +560,53 @@ def main_menu():
         sys.exit(0)
 
 
-def get_total_transactions_for_month(sheet, available_months):
-    print(available_months)
+def user_selected_month_from_available_months(sheet):
+    # TODO: fix bug where a wrongly entered month carries through to the next function call
+    global month
+    available_months = get_list_of_all_sheet_titles(sheet)
+
+    print(f"\nAvailable months: {available_months}")
+    month = input("\nPlease enter a month from the available options: ")
+    month = month.strip().lower().capitalize()
+
+    if month in available_months:
+        return month
+    else:
+        display_message(f"{month} not found, please try again", 2)
+        month = None
+        totals_menu(sheet)
 
 
-def get_total_vat_23_for_month(sheet, available_months):
+def get_total_transactions_for_month(sheet):
+    month = user_selected_month_from_available_months(sheet)
+    print(f"month: {month}")
+
+
+def get_total_vat_23_for_month(sheet):
     pass
 
 
-def get_total_vat_13_5_for_month(sheet, available_months):
+def get_total_vat_13_5_for_month(sheet):
     pass
 
 
-def get_total_vat_exempt_for_month(sheet, available_months):
+def get_total_vat_exempt_for_month(sheet):
     pass
 
 
-def get_total_transactions_for_all_months(sheet, available_months):
+def get_total_transactions_for_all_months(sheet):
     pass
 
 
-def get_total_vat_23_for_all_months(sheet, available_months):
+def get_total_vat_23_for_all_months(sheet):
     pass
 
 
-def get_total_vat_13_5_for_all_months(sheet, available_months):
+def get_total_vat_13_5_for_all_months(sheet):
     pass
 
 
-def get_total_vat_exempt_for_all_months(sheet, available_months):
+def get_total_vat_exempt_for_all_months(sheet):
     pass
 
 
@@ -600,7 +616,7 @@ def totals_menu(sheet):
     totals specific options for a user to interogate the
     data for a given month
     """
-    available_months = get_list_of_all_sheet_titles(sheet)
+
     menu = "totals menu"
     heading = "Totals"
     totals_menu_options = {
@@ -618,21 +634,21 @@ def totals_menu(sheet):
     choice = print_selected_menu(heading, totals_menu_options)
 
     if choice == "1":
-        get_total_transactions_for_month(sheet, available_months)
+        get_total_transactions_for_month(sheet)
     if choice == "2":
-        get_total_vat_23_for_month(sheet, available_months)
+        get_total_vat_23_for_month(sheet)
     if choice == "3":
-        get_total_vat_13_5_for_month(sheet, available_months)
+        get_total_vat_13_5_for_month(sheet)
     if choice == "4":
-        get_total_vat_exempt_for_month(sheet, available_months)
+        get_total_vat_exempt_for_month(sheet)
     if choice == "5":
-        get_total_transactions_for_all_months(sheet, available_months)
+        get_total_transactions_for_all_months(sheet)
     if choice == "6":
-        get_total_vat_23_for_all_months(sheet, available_months)
+        get_total_vat_23_for_all_months(sheet)
     if choice == "7":
-        get_total_vat_13_5_for_all_months(sheet, available_months)
+        get_total_vat_13_5_for_all_months(sheet)
     if choice == "8":
-        get_total_vat_exempt_for_all_months(sheet, available_months)
+        get_total_vat_exempt_for_all_months(sheet)
 
     if choice == "x":
         if sheet == "sales":
