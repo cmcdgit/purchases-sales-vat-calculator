@@ -20,7 +20,6 @@ PURCHASES_SHEET = GSPREAD_CLIENT.open('vat_purchases')
 SALES_SHEET = GSPREAD_CLIENT.open('vat_sales')
 vat_rate = None
 total_price_including_vat = None
-month = None
 
 init()
 init(autoreset=True)
@@ -561,19 +560,19 @@ def main_menu():
 
 
 def user_selected_month_from_available_months(sheet):
-    # TODO: fix bug where a wrongly entered month carries through to the next function call
-    global month
     available_months = get_list_of_all_sheet_titles(sheet)
 
-    print(f"\nAvailable months: {available_months}")
-    month = input("\nPlease enter a month from the available options: ")
-    month = month.strip().lower().capitalize()
-
-    if month in available_months:
-        return month
-    else:
-        display_message(f"{month} not found, please try again", 2)
+    if len(available_months) > 0:
         month = None
+        while month not in available_months:
+            print(f"\nAvailable months: {available_months}")
+            month = input("\nPlease enter a month from the available options: ")
+            month = month.strip().lower().capitalize()
+
+        return month
+
+    else:
+        display_message("No months a currently available, please add one first", 3)
         totals_menu(sheet)
 
 
