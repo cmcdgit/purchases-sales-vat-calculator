@@ -316,13 +316,13 @@ def calculate_vat(total_price_including_vat, vat_rate):
     vat_applicable = round(((float(total_price_including_vat) * float(vat_rate)) / 100), 2)
 
     if vat_rate == "23":
-        return [vat_applicable, None, vat_applicable, None]
+        return [vat_applicable, 0, vat_applicable, 0]
 
     elif vat_rate == "13.5":
-        return [None, vat_applicable, vat_applicable, None]
+        return [0, vat_applicable, vat_applicable, 0]
 
     elif vat_rate == "0":
-        return [None, None, None, total_price_including_vat]
+        return [0, 0, 0, total_price_including_vat]
 
 
 def generate_next_invoice_number(ledger, month):
@@ -364,44 +364,30 @@ def edit_transaction(sheet):
 
 
 def display_all_transactions_for_current_month(sheet):
+    """
+    Function to display google worksheet to the terminal for inspection purposes
+    This function tracks the largest item in each column to provide a correctly
+    formatted table.
+    """
     ledger = get_selected_worksheet(sheet)
-    month = get_month()
+    current_month = get_month()
 
-    col_1 = ledger.worksheet(month).col_values(1)
-    col_2 = ledger.worksheet(month).col_values(2)
-    col_3 = ledger.worksheet(month).col_values(3)
-    col_4 = ledger.worksheet(month).col_values(4)
-    col_5 = ledger.worksheet(month).col_values(5)
-    col_6 = ledger.worksheet(month).col_values(6)
-    col_7 = ledger.worksheet(month).col_values(7)
-    col_8 = ledger.worksheet(month).col_values(8)
+    num_of_rows = len(ledger.worksheet(current_month).col_values(1))
+    num_of_cols = len(ledger.worksheet(current_month).row_values(1))
 
-    # all_cols = [row_1, row_2, row_3, row_4, row_5, row_6, row_7, row_8]
+    columns = []
 
-    for i in range(8):
-        print(f"{col_1[i]} | {col_2[i]} | {col_3[i]} | {col_4[i]} | {col_5[i]} | {col_6[i]} | {col_7[i]} | {col_8[i]}")
-    # for row in all_rows:
-    #     length = get_length_of_longest_list_item(row)
+    for i in range(num_of_cols):
+        new_list = ledger.worksheet(current_month).col_values(i + 1)
+        columns.insert(i, new_list)
 
-    #     for col in row:
-    #         all_cols.append(col)
+    for i in range(num_of_rows):
+        for y in range(num_of_cols):
+            width = get_length_of_longest_list_item(columns[y])
+            column_width = width - len(columns[y][i])
+            print(f"{columns[y][i]}" + " "*column_width, end=" | ")
+        print()
 
-
-
-        # print(length)
-        # print(row)
-
-    # print(row_1)
-    # print(row_2)
-    # print(row_3)
-    # print(row_4)
-    # print(row_5)
-    # print(row_6)
-    # print(row_7)
-    # print(row_8)
-
-    # for row in all_data:
-    #     print(row)
     input("\n\tPress Enter to continue: ")
 
 
