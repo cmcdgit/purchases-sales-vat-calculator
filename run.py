@@ -28,7 +28,7 @@ init(autoreset=True)
 class colors:
     blue = Fore.BLUE
     green = Fore.GREEN
-
+    white = Fore.WHITE
 
 
 class sales_columns:
@@ -155,11 +155,11 @@ def show_details_on_vat():
     input("\n\tPress Enter to continue: ")
 
 
-def display_error_message(error_message, wait_time=None):
+def display_message(message, wait_time=None):
     """
     Request user enters a numeric value
     """
-    print(f"\n\n\t" + f"{Fore.RED}{error_message}\n")
+    print(f"\n\n\t" + f"{Fore.RED}{message}\n")
 
     if wait_time:
         sleep(wait_time)
@@ -280,7 +280,7 @@ def request_new_sales_transaction(details=None, price_including_vat=None, rate=N
             total_price_including_vat = float(total_price_including_vat)
 
         except ValueError:
-            display_error_message("Please check that the total price is a number", 0)
+            display_message("Please check that the total price is a number", 0)
             request_new_sales_transaction(details=details)
 
     else:
@@ -298,7 +298,7 @@ def request_new_sales_transaction(details=None, price_including_vat=None, rate=N
             show_details_on_vat()
             request_new_sales_transaction(details=details, price_including_vat=total_price_including_vat)
         else:
-            display_error_message("Please check this is a valid tax rate", 2)
+            display_message("Please check this is a valid tax rate", 2)
             show_details_on_vat()
             request_new_sales_transaction(details=details, price_including_vat=total_price_including_vat)
 
@@ -340,6 +340,12 @@ def generate_next_invoice_number(ledger, month):
 def add_new_transaction(sheet):
     ledger = get_selected_worksheet(sheet)
     month = get_month()
+
+    available_months = get_list_of_all_sheet_titles(sheet)
+
+    if month not in available_months:
+        display_message(f"No sheet available for {month}", 1)
+        create_new_sheet(sheet)
 
     if sheet == "purchases":
         request_new_purchases_transaction()
@@ -395,9 +401,10 @@ def display_all_transactions_for_month(sheet, month=None):
     input("\n\tPress Enter to continue: ")
 
 
-def display_all_transactions_for_a_selected_month(sheet):
-    month = input("\nPlease select a month to review " + f"{colors.green}(Press L to list available months): ")
-    month = month.lower().capitalize()
+def get_list_of_all_sheet_titles(sheet):
+    """
+    Returns a list of all sheet titles/available months
+    """
 
     ledger = get_selected_worksheet(sheet)
     all_sheets = ledger.worksheets()
@@ -405,6 +412,15 @@ def display_all_transactions_for_a_selected_month(sheet):
 
     for sheet in all_sheets:
         months.append(sheet.title)
+
+    return months
+
+
+def display_all_transactions_for_a_selected_month(sheet):
+    month = input("\nPlease select a month to review " + f"{colors.green}(Press L to list available months): ")
+    month = month.lower().capitalize()
+
+    months = get_list_of_all_sheet_titles(sheet)
 
     if month == "L":
         print(months)
@@ -415,17 +431,74 @@ def display_all_transactions_for_a_selected_month(sheet):
         try:
             display_all_transactions_for_month(sheet, month)
         except FileNotFoundError as e:
-            display_error_message(f"Worksheet not found for chosen month: {e}")
+            display_message(f"Worksheet not found for chosen month: {e}")
 
     else:
         print(f"\nAvailable months: {months}")
-        display_error_message(f"Worksheet not found for chosen month: ")
+        display_message(f"Worksheet not found for chosen month: ")
         clear_screen()
         sales_menu()
 
 
-def create_new_sheet_for_current_month(sheet):
-    pass
+def create_new_sheet(sheet):
+    all_months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ]
+    headings = ["Date",	"Details", "Invoice Number", "Total", "Vat 23%", "Vat 13.5%", "VAT", "Exempt or export"]
+    response = input("\n\tAdd a sheet for the current month? (n to create for another)" + f"{colors.green} (y/n):  ")
+    response = response.lower().strip()
+
+    if response.startswith("y"):
+        month = get_month()
+        print(f"month: {month}")
+        ledger = get_selected_worksheet(sheet)
+
+        try:
+            ledger.add_worksheet(month, rows=150, cols=10)
+            ledger.worksheet(month).append_row(headings)
+            ledger.worksheet(month).format("A1:H1", { 'backgroundColor': {
+                'blue': 0.65882355,
+                'green': 0.84313726,
+                'red': 0.7137255
+            }})
+            display_message(f"Worksheet created for {month}", 2)
+        except FileExistsError as e:
+            print(f"File already exists: \n{e}")
+
+    elif response.startswith("n"):
+        months = get_list_of_all_sheet_titles(sheet)
+        print(f"\n\t{colors.green}Already created: " + f"\n\t{colors.white}{months}\n")
+        new_month = input("\n\tWhich month would you like to add?  ")
+        new_month = new_month.strip().lower().capitalize()
+
+        if new_month not in months and new_month in all_months:
+            ledger = get_selected_worksheet(sheet)
+
+            try:
+                ledger.add_worksheet(new_month, rows=150, cols=10)
+                ledger.worksheet(new_month).append_row(headings)
+                ledger.worksheet(new_month).format("A1:H1", { 'backgroundColor': {
+                    'blue': 0.65882355,
+                    'green': 0.84313726,
+                    'red': 0.7137255
+            }})
+                display_message(f"Worksheet created for {new_month}", 2)
+
+            except FileNotFoundError as e:
+                print(f"Can't find file:\n{e}")
+        else:
+            display_message("Please check the value you entered!")
+            if sheet == "sales":
+                sales_menu()
+            elif sheet == "purchases":
+                purchases_menu()
+            else:
+                main_menu()
+
+    else:
+        display_message("Please check the value you selected!")
+
 
 
 def main_menu():
@@ -454,6 +527,7 @@ def main_menu():
         purchases_menu()
 
     if choice == "x":
+        clear_screen()
         print_banner("Goodbye...")
         sleep(3)
         sys.exit(0)
@@ -470,11 +544,11 @@ def sales_menu():
     heading = "Sales"
     sales_menu_options = {
         "1": "Add a new transaction",
-        "2": "Edit a transaction",
+        "2": "Edit a transaction (nw)",
         "3": "Display all transactions for the current month",
-        "4": "Display last 7 transactions for the current month",
+        "4": "Display last 7 transactions for the current month (nw)",
         "5": "Display all transactions for a given month",
-        "6": "Create a new sales sheet for the current month (if none yet exists)",
+        "6": "Create a new sales sheet for the current month (if none yet exists) (nw)",
         "7": "Show details on local VAT rates",
         "x": "Return to main menu"
     }
@@ -494,7 +568,8 @@ def sales_menu():
         display_all_transactions_for_a_selected_month(sheet)
         sales_menu()
     if choice == "6":
-        create_new_sheet_for_current_month(sheet)
+        create_new_sheet(sheet)
+        sales_menu()
     if choice == "7":
         show_details_on_vat()
         sales_menu()
