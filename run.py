@@ -330,11 +330,22 @@ def generate_next_invoice_number(ledger, month):
     Function to get the last invoice number on a google sheet and iterate by 1
     """
 
-    all_data = ledger.worksheet(month).get_all_values()
-    last_row = all_data[-1]
-    last_invoice_number = last_row[sales_columns.invoice_number]
-    if str(last_invoice_number).isnumeric:
-        return int(last_invoice_number) + 1
+    all_months = get_list_of_all_sheet_titles(ledger)
+    number_of_available_months = len(all_months)
+    all_months = reversed(all_months)
+    counter = 0
+
+    for month in all_months:
+        all_data = ledger.worksheet(month).get_all_values()
+        last_row = all_data[-1]
+        last_invoice_number = last_row[sales_columns.invoice_number]
+        try:
+            if str(last_invoice_number).isnumeric:
+                return int(last_invoice_number) + 1
+        except ValueError as e:
+            counter += 1
+            if counter == number_of_available_months:
+                display_message(f"There are no valid invoice numbers available on this sheet: \n{e}", 3)
 
 
 def add_new_transaction(sheet):
@@ -358,6 +369,7 @@ def add_new_transaction(sheet):
         formatted_row = [date, details,invoice_number,total_price_including_vat] + formatted_vat_details
 
         try:
+            month = get_month()
             ledger.worksheet(month).append_row(formatted_row)
         except FileNotFoundError as e:
             print(f"Can't find file:\n{e}")
@@ -418,11 +430,11 @@ def get_list_of_all_sheet_titles(sheet):
 
 def display_all_transactions_for_a_selected_month(sheet):
     month = input("\nPlease select a month to review " + f"{colors.green}(Press L to list available months): ")
-    month = month.lower().capitalize()
+    month = month.strip().lower().capitalize()
 
     months = get_list_of_all_sheet_titles(sheet)
 
-    if month == "L":
+    if month.startswith("L"):
         print(months)
         month = input("\nPlease make a selection: ")
         month = month.lower().capitalize()
@@ -451,7 +463,6 @@ def create_new_sheet(sheet):
 
     if response.startswith("y"):
         month = get_month()
-        print(f"month: {month}")
         ledger = get_selected_worksheet(sheet)
 
         try:
@@ -548,7 +559,7 @@ def sales_menu():
         "3": "Display all transactions for the current month",
         "4": "Display last 7 transactions for the current month (nw)",
         "5": "Display all transactions for a given month",
-        "6": "Create a new sales sheet for the current month (if none yet exists) (nw)",
+        "6": "Create a new sales sheet for the current month (if none yet exists)",
         "7": "Show details on local VAT rates",
         "x": "Return to main menu"
     }
