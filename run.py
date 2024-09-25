@@ -27,6 +27,7 @@ init(autoreset=True)
 
 class colors:
     blue = Fore.BLUE
+    green = Fore.GREEN
 
 
 
@@ -74,6 +75,13 @@ def typewriter_print(print_statement):
     print()
 
 
+def print_banner(banner):
+    print('\n' + f'{colors.blue}*'*84)
+    print(f"\n\t{text2art(banner)}")
+    print('\n' + f'{colors.blue}*'*84)
+    print("")
+
+
 def print_selected_menu(heading, menu_options):
     """
     Prints a menu requesting a user to decide whether they
@@ -84,11 +92,8 @@ def print_selected_menu(heading, menu_options):
     """
 
     clear_screen()
+    print_banner(heading)
 
-    print('\n' + f'{colors.blue}*'*84)
-    print(f"\n\t{text2art(heading)}")
-    print('\n' + f'{colors.blue}*'*84)
-    print("")
     print("Select")
     print("")
     for k, v in menu_options.items():
@@ -150,7 +155,7 @@ def show_details_on_vat():
     input("\n\tPress Enter to continue: ")
 
 
-def display_error_message(error_message, wait_time):
+def display_error_message(error_message, wait_time=None):
     """
     Request user enters a numeric value
     """
@@ -242,13 +247,8 @@ def request_new_sales_transaction(details=None, price_including_vat=None, rate=N
     global vat_rate
 
     clear_screen()
-    new_sale_banner = text2art("Add new sale")
+    print_banner("Add new sale")
 
-
-    print('\n' + f'{colors.blue}*'*84)
-    print(f"\n\t{new_sale_banner}")
-    print('\n' + f'{colors.blue}*'*84)
-    print("")
     print("Please provide details of the new sales transaction here:\n\n")
 
     # Questions as variables so size can be determined to neatly display output
@@ -363,24 +363,28 @@ def edit_transaction(sheet):
     pass
 
 
-def display_all_transactions_for_current_month(sheet):
+def display_all_transactions_for_month(sheet, month=None):
     """
     Function to display google worksheet to the terminal for inspection purposes
     This function tracks the largest item in each column to provide a correctly
     formatted table.
     """
     ledger = get_selected_worksheet(sheet)
-    current_month = get_month()
+    if month is None:
+        month = get_month()
+    else:
+        month = month.lower().capitalize()
 
-    num_of_rows = len(ledger.worksheet(current_month).col_values(1))
-    num_of_cols = len(ledger.worksheet(current_month).row_values(1))
+    num_of_rows = len(ledger.worksheet(month).col_values(1))
+    num_of_cols = len(ledger.worksheet(month).row_values(1))
 
     columns = []
 
     for i in range(num_of_cols):
-        new_list = ledger.worksheet(current_month).col_values(i + 1)
+        new_list = ledger.worksheet(month).col_values(i + 1)
         columns.insert(i, new_list)
 
+    print()
     for i in range(num_of_rows):
         for y in range(num_of_cols):
             width = get_length_of_longest_list_item(columns[y])
@@ -392,7 +396,32 @@ def display_all_transactions_for_current_month(sheet):
 
 
 def display_all_transactions_for_a_selected_month(sheet):
-    pass
+    month = input("\nPlease select a month to review " + f"{colors.green}(Press L to list available months): ")
+    month = month.lower().capitalize()
+
+    ledger = get_selected_worksheet(sheet)
+    all_sheets = ledger.worksheets()
+    months = []
+
+    for sheet in all_sheets:
+        months.append(sheet.title)
+
+    if month == "L":
+        print(months)
+        month = input("\nPlease make a selection: ")
+        month = month.lower().capitalize()
+
+    if month in months:
+        try:
+            display_all_transactions_for_month(sheet, month)
+        except FileNotFoundError as e:
+            display_error_message(f"Worksheet not found for chosen month: {e}")
+
+    else:
+        print(f"\nAvailable months: {months}")
+        display_error_message(f"Worksheet not found for chosen month: ")
+        clear_screen()
+        sales_menu()
 
 
 def create_new_sheet_for_current_month(sheet):
@@ -420,8 +449,14 @@ def main_menu():
 
     if choice == "1":
         sales_menu()
+
     if choice == "2":
         purchases_menu()
+
+    if choice == "x":
+        print_banner("Goodbye...")
+        sleep(3)
+        sys.exit(0)
 
 
 def sales_menu():
@@ -451,12 +486,13 @@ def sales_menu():
     if choice == "2":
         edit_transaction(sheet)
     if choice == "3":
-        display_all_transactions_for_current_month(sheet)
+        display_all_transactions_for_month(sheet)
         sales_menu()
     if choice == "4":
         display_last_7_transactions_for_current_month(sheet)
     if choice == "5":
         display_all_transactions_for_a_selected_month(sheet)
+        sales_menu()
     if choice == "6":
         create_new_sheet_for_current_month(sheet)
     if choice == "7":
