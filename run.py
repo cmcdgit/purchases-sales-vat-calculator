@@ -381,13 +381,16 @@ def generate_next_invoice_number(ledger):
 
     for month in all_months:
         all_data = ledger.worksheet(month).get_all_values()
+
         last_row = all_data[-1]
-        last_invoice_number = last_row[sales_columns.invoice_number]
-        print('last_invoice_number:')
-        print(last_invoice_number)
+
+        # subtracting 1 below to account for gspread column v list numbering
+        last_invoice_number = last_row[sales_columns.invoice_number - 1]
+
         try:
             if str(last_invoice_number).isnumeric:
-                return int(last_invoice_number)
+                # return last invoice number + 1 (next available)
+                return int(last_invoice_number) + 1
         except ValueError as e:
             pass
 
@@ -624,32 +627,45 @@ def user_selected_month_from_available_months(sheet):
         totals_menu(sheet)
 
 
-def get_total_transactions_for_month(sheet):
-    month = user_selected_month_from_available_months(sheet)
+def get_monthly_total_for(sheet, choice):
 
+    if sheet == "sales":
+        if choice == "total":
+            message = "Total sales"
+            column = sales_columns.total
+        elif choice == "vat_23":
+            message = "Total 23% VAT"
+            column = sales_columns.vat_23
+        elif choice == "vat_13.5":
+            message = "Total 13.5% VAT"
+            column = sales_columns.vat_13_5
+        elif choice == "vat_total":
+            message = "Total combined VAT"
+            column = sales_columns.vat
+        elif chocie == "exempt_total":
+            message = "Total exempt from VAT"
+            column = sales_columns.exempt
+
+
+    else:
+        column = purchases_columns.date
+        column = purchases_columns.details
+        column = purchases_columns.invoice_number
+        column = purchases_columns.total
+        column = purchases_columns.resale_vat
+        column = purchases_columns.non_resale_vat
+        column = purchases_columns.intra_eu
+        column = purchases_columns.vat
+
+    month = user_selected_month_from_available_months(sheet)
     ledger = get_selected_worksheet(sheet)
 
-    totals_without_header = ledger.worksheet(month).col_values(sales_columns.total)[1:]
+    totals_without_header = ledger.worksheet(month).col_values(column)[1:]
 
     combined_total = sum([float(total) for total in totals_without_header])
-
-    print(f"totals: {round(combined_total, 2)}")
-
-
-def get_total_vat_23_for_month(sheet):
-    pass
-
-
-def get_total_vat_13_5_for_month(sheet):
-    pass
-
-
-def get_total_vat_combined_for_month(sheet):
-    pass
-
-
-def get_total_vat_exempt_for_month(sheet):
-    pass
+    rounded_total = round(combined_total, 2)
+    display_message(f"{message} for {month}: €{rounded_total}", is_warning=False)
+    totals_menu(sheet)
 
 
 def get_total_transactions_for_all_months(sheet):
@@ -682,40 +698,41 @@ def totals_menu(sheet):
     menu = "totals menu"
     heading = "Totals"
     totals_menu_options = {
-        "1": "Month: Total transactions (including VAT)",
-        "2": "Month: Total VAT (23%)",
-        "3": "Month: Total VAT (13.5%)",
-        "4": "Month: Total VAT (combined)",
-        "5": "Month: Total of tax exempt sales",
-        "6": "Year to date: Transactions (including VAT)",
-        "7": "Year to date: VAT (23%)",
-        "8": "Year to date: VAT (13.5%)",
-        "9": "Year to date: Total VAT (combined)",
-        "10": "Year to date: Tax exempt sales",
+        "1": "Month: Display all totals",
+        "2": "Month: Total transactions (including VAT)",
+        "3": "Month: Total VAT (23%)",
+        "4": "Month: Total VAT (13.5%)",
+        "5": "Month: Total VAT (combined)",
+        "6": "Month: Total of tax exempt sales",
+        "7": "Year to date: Transactions (including VAT)",
+        "8": "Year to date: VAT (23%)",
+        "9": "Year to date: VAT (13.5%)",
+        "10": "Year to date: Total VAT (combined)",
+        "11": "Year to date: Tax exempt sales",
         "x": f"Back to {sheet} menu"
     }
 
     choice = print_selected_menu(heading, totals_menu_options)
 
-    if choice == "1":
-        get_total_transactions_for_month(sheet)
     if choice == "2":
-        get_total_vat_23_for_month(sheet)
+        get_monthly_total_for(sheet, "total")
     if choice == "3":
-        get_total_vat_13_5_for_month(sheet)
+        get_monthly_total_for(sheet, "vat_23")
     if choice == "4":
-        get_total_vat_combined_for_month(sheet)
+        get_monthly_total_for(sheet, "vat_13.5")
     if choice == "5":
-        get_total_vat_exempt_for_month(sheet)
+        get_monthly_total_for(sheet, "vat_total")
     if choice == "6":
-        get_total_transactions_for_all_months(sheet)
+        get_monthly_total_for(sheet, "exempt_total")
     if choice == "7":
-        get_total_vat_23_for_all_months(sheet)
+        get_total_transactions_for_all_months(sheet)
     if choice == "8":
-        get_total_vat_13_5_for_all_months(sheet)
+        get_total_vat_23_for_all_months(sheet)
     if choice == "9":
-        get_total_vat_combined_for_all_months(sheet)
+        get_total_vat_13_5_for_all_months(sheet)
     if choice == "10":
+        get_total_vat_combined_for_all_months(sheet)
+    if choice == "11":
         get_total_vat_exempt_for_all_months(sheet)
 
     if choice == "x":
@@ -808,7 +825,9 @@ def main():
     """
     Main function
     """
-    main_menu()
-
+    try:
+        main_menu()
+    except Exception:
+        raise ("Something went wrong, try rebooting")
 
 main()
