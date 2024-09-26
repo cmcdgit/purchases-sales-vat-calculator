@@ -460,11 +460,20 @@ def display_all_transactions_for_month(sheet, month=None):
         columns.insert(i, new_list)
 
 
-    for i in range(num_of_rows):
+    dont_color = True
+
+    for idx, i in enumerate(range(num_of_rows)):
+        # enumerating of rows and only colouring the first row of headings
+        # for greater readability
+        dont_color = (idx >= 1)
         for y in range(num_of_cols):
             width = get_length_of_longest_list_item(columns[y])
             column_width = width - len(columns[y][i])
-            print(f"{columns[y][i]}" + " "*column_width, end=" | ")
+            if not dont_color:
+                print(f"{colors.blue}{columns[y][i]}" + " "*column_width, end=" | ")
+
+            else:
+                print(f"{columns[y][i]}" + " "*column_width, end=" | ")
         print()
 
     click_to_continue()
