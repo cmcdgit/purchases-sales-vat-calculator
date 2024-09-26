@@ -202,8 +202,6 @@ def get_selected_worksheet(sheet):
     else:
         sheet = SALES_SHEET
 
-    # data = sheet.worksheet(month)
-    # values = data.get_all_values()
     return sheet
 
 
@@ -302,9 +300,7 @@ def request_new_sales_transaction(details=None, price_including_vat=None, rate=N
     totals_q = "Total including VAT:"
     vat_rate_q = "Which VAT rate applies? (Press Enter for more details)"
 
-    # required_space = 4
     width = get_length_of_longest_list_item([details_q, totals_q, vat_rate_q])
-    # + required_space
 
     space = "  "
     formatted_details_q = f"{details_q}" + "."*(width - len(details_q)) + space
@@ -348,8 +344,6 @@ def request_new_sales_transaction(details=None, price_including_vat=None, rate=N
             show_details_on_vat()
             request_new_sales_transaction(details=details, price_including_vat=total_price_including_vat)
 
-    # else:
-    #     print(formatted_vat_rate_q + f"{vat_rate}%")
 
     return (details, total_price_including_vat, vat_rate)
 
@@ -455,8 +449,6 @@ def display_all_transactions_for_month(sheet, month=None):
     ledger = get_selected_worksheet(sheet)
     if month is None:
         month = get_month()
-    # else:
-    #     month = month.lower().capitalize()
 
     num_of_rows = len(ledger.worksheet(month).col_values(1))
     num_of_cols = len(ledger.worksheet(month).row_values(1))
@@ -638,8 +630,6 @@ def print_monthly_totals_on_one_line(sheet):
     rounded_totals = []
 
     month = user_selected_month_from_available_months(sheet)
-
-    # request_user_select_a_month(sheet)
 
     for choice in choices:
         message, month, rounded_total = get_monthly_total_for(sheet, choice, month)
