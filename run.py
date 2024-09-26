@@ -30,29 +30,30 @@ class colors:
     green = Fore.GREEN
     red = Fore.RED
     white = Fore.WHITE
+    yellow = Fore.YELLOW
 
 
 class sales_columns:
-    date = 0
-    details = 1
-    invoice_number = 2
-    total = 3
-    vat_23 = 4
-    vat_13_5 = 5
-    vat = 6
-    exempt = 7
+    date = 1
+    details = 2
+    invoice_number = 3
+    total = 4
+    vat_23 = 5
+    vat_13_5 = 6
+    vat = 7
+    exempt = 8
 
 
 
 class purchases_columns:
-    date = 0
-    details = 1
-    invoice_number = 2
-    total = 3
-    resale_vat = 4
-    non_resale_vat = 5
-    intra_eu = 6
-    vat = 7
+    date = 1
+    details = 2
+    invoice_number = 3
+    total = 4
+    resale_vat = 5
+    non_resale_vat = 6
+    intra_eu = 7
+    vat = 8
 
 
 
@@ -64,12 +65,12 @@ def clear_screen():
     os.system('clear')
 
 
-def typewriter_print(print_statement):
+def typewriter_print(print_statement, sleep_time=0.03):
     """
     Function to output text to mimic typewriter output speeds
     """
     for char in print_statement:
-        sleep(0.03)
+        sleep(sleep_time)
         sys.stdout.write(char)
         sys.stdout.flush()
 
@@ -77,10 +78,21 @@ def typewriter_print(print_statement):
 
 
 def print_banner(banner):
+    """
+    Displays a passed banner using Art package
+    """
     print('\n' + f'{colors.blue}*'*84)
     print(f"\n\t{text2art(banner)}")
     print('\n' + f'{colors.blue}*'*84)
     print("")
+
+
+def click_to_continue():
+    """
+    Request a user press enter to continue, used in a few places so
+    broken out to a function for consistent display across the app
+    """
+    input(f"\n\n\t{colors.yellow}Press Enter to continue: ")
 
 
 def print_selected_menu(heading, menu_options):
@@ -153,7 +165,7 @@ def show_details_on_vat():
         print(f"{Fore.LIGHTWHITE_EX}\t{k}%" + f"{Fore.BLUE}{v}")
         sleep(1.5)
 
-    input("\n\tPress Enter to continue: ")
+    click_to_continue()
 
 
 def display_message(message, wait_time=None, is_warning=True):
@@ -168,7 +180,16 @@ def display_message(message, wait_time=None, is_warning=True):
     if wait_time:
         sleep(wait_time)
     else:
-        input("\n\tPress Enter to continue: ")
+        click_to_continue()
+
+
+def display_wait_message():
+    """
+    Displays a wait message to keep a user engaged while data is retrieved
+    """
+    print(f"{colors.blue}\n  ,,")
+    print(f"{colors.blue}c(_)'", end=" ")
+    typewriter_print("This might take a few seconds...\n\n")
 
 
 def get_selected_worksheet(sheet):
@@ -216,6 +237,26 @@ def request_input_from_user():
     user_choice = input().lower().strip()
 
     return user_choice
+
+
+def request_user_select_a_month(sheet):
+    """
+    Function to request a user selects a month from available months
+    """
+    month = input("\nPlease select a month to review " + f"{colors.green}(Press L to list available months): ")
+    month = month.strip().lower().capitalize()
+
+    months = get_list_of_all_sheet_titles(sheet)
+
+    if month.startswith("L"):
+        print(months)
+        month = input("\nPlease make a selection: ")
+        month = month.strip().lower().capitalize()
+
+    if month in months:
+        display_wait_message()
+
+    return (month, months)
 
 
 def display_countdown(menu):
@@ -337,27 +378,31 @@ def generate_next_invoice_number(ledger):
     all_months = get_list_of_all_sheet_titles(ledger)
     number_of_available_months = len(all_months)
     all_months = reversed(all_months)
-    # counter = 0
 
     for month in all_months:
         all_data = ledger.worksheet(month).get_all_values()
         last_row = all_data[-1]
         last_invoice_number = last_row[sales_columns.invoice_number]
+        print('last_invoice_number:')
+        print(last_invoice_number)
         try:
             if str(last_invoice_number).isnumeric:
-                return int(last_invoice_number) + 1
+                return int(last_invoice_number)
         except ValueError as e:
             pass
 
 
 def create_sheet_if_not_available(sheet):
+    """
+    Function to check if a sheet for a particular month is
+    available, and direct a user to create one if necessary.
+    """
     month = get_month()
     available_months = get_list_of_all_sheet_titles(sheet)
 
     if month not in available_months:
         display_message(f"No sheet available for {month}", 1)
         create_new_sheet(sheet)
-
 
 
 def add_new_transaction(sheet):
@@ -406,8 +451,8 @@ def display_all_transactions_for_month(sheet, month=None):
     ledger = get_selected_worksheet(sheet)
     if month is None:
         month = get_month()
-    else:
-        month = month.lower().capitalize()
+    # else:
+    #     month = month.lower().capitalize()
 
     num_of_rows = len(ledger.worksheet(month).col_values(1))
     num_of_cols = len(ledger.worksheet(month).row_values(1))
@@ -418,7 +463,7 @@ def display_all_transactions_for_month(sheet, month=None):
         new_list = ledger.worksheet(month).col_values(i + 1)
         columns.insert(i, new_list)
 
-    print()
+
     for i in range(num_of_rows):
         for y in range(num_of_cols):
             width = get_length_of_longest_list_item(columns[y])
@@ -426,7 +471,7 @@ def display_all_transactions_for_month(sheet, month=None):
             print(f"{columns[y][i]}" + " "*column_width, end=" | ")
         print()
 
-    input("\n\tPress Enter to continue: ")
+    click_to_continue()
 
 
 def get_list_of_all_sheet_titles(sheet):
@@ -445,15 +490,11 @@ def get_list_of_all_sheet_titles(sheet):
 
 
 def display_all_transactions_for_a_selected_month(sheet):
-    month = input("\nPlease select a month to review " + f"{colors.green}(Press L to list available months): ")
-    month = month.strip().lower().capitalize()
-
-    months = get_list_of_all_sheet_titles(sheet)
-
-    if month.startswith("L"):
-        print(months)
-        month = input("\nPlease make a selection: ")
-        month = month.lower().capitalize()
+    """
+    Function to request a user to select a month to view details of
+    in the terminal.
+    """
+    month, months = request_user_select_a_month(sheet)
 
     if month in months:
         try:
@@ -462,13 +503,16 @@ def display_all_transactions_for_a_selected_month(sheet):
             display_message(f"Worksheet not found for chosen month: {e}")
 
     else:
-        print(f"\nAvailable months: {months}")
-        display_message(f"Worksheet not found for chosen month: ")
+        print(f"\nAvailable months: {colors.green}{months}")
+        display_message(f"Worksheet not found for chosen month, returning to {sheet} menu!", 3)
         clear_screen()
         sales_menu()
 
 
 def create_new_sheet(sheet):
+    """
+    Function to create a new sheet for the current month or a given month.
+    """
     all_months = [
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
@@ -555,17 +599,21 @@ def main_menu():
     if choice == "x":
         clear_screen()
         print_banner("Goodbye...")
-        sleep(3)
+        sleep(2)
         sys.exit(0)
 
 
 def user_selected_month_from_available_months(sheet):
+    """
+    Function to request a user to select a month from available
+    months to review transaction totals.
+    """
     available_months = get_list_of_all_sheet_titles(sheet)
 
     if len(available_months) > 0:
         month = None
         while month not in available_months:
-            print(f"\nAvailable months: {available_months}")
+            print(f"\nAvailable months: {colors.green}{available_months}")
             month = input("\nPlease enter a month from the available options: ")
             month = month.strip().lower().capitalize()
 
@@ -578,7 +626,14 @@ def user_selected_month_from_available_months(sheet):
 
 def get_total_transactions_for_month(sheet):
     month = user_selected_month_from_available_months(sheet)
-    print(f"month: {month}")
+
+    ledger = get_selected_worksheet(sheet)
+
+    totals_without_header = ledger.worksheet(month).col_values(sales_columns.total)[1:]
+
+    combined_total = sum([float(total) for total in totals_without_header])
+
+    print(f"totals: {round(combined_total, 2)}")
 
 
 def get_total_vat_23_for_month(sheet):
@@ -669,6 +724,7 @@ def totals_menu(sheet):
         else:
             purchases_menu()
 
+
 def sales_menu():
     """
     Calls the generic print_selected_menu function with
@@ -699,6 +755,7 @@ def sales_menu():
     if choice == "3":
         totals_menu(sheet)
     if choice == "4":
+        display_wait_message()
         display_all_transactions_for_month(sheet)
         sales_menu()
     if choice == "5":
