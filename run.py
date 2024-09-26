@@ -31,6 +31,7 @@ class colors:
     red = Fore.RED
     white = Fore.WHITE
     yellow = Fore.YELLOW
+    magenta = Fore.MAGENTA
 
 
 class sales_columns:
@@ -620,6 +621,9 @@ def user_selected_month_from_available_months(sheet):
             month = input("\nPlease enter a month from the available options: ")
             month = month.strip().lower().capitalize()
 
+        if month in available_months:
+            display_wait_message()
+
         return month
 
     else:
@@ -627,7 +631,40 @@ def user_selected_month_from_available_months(sheet):
         totals_menu(sheet)
 
 
-def get_monthly_total_for(sheet, choice):
+def print_monthly_totals_on_one_line(sheet):
+    choices = ["total", "vat_23", "vat_13.5", "vat_total", "exempt_total"]
+    messages = []
+    months = []
+    rounded_totals = []
+
+    month = user_selected_month_from_available_months(sheet)
+
+    # request_user_select_a_month(sheet)
+
+    for choice in choices:
+        message, month, rounded_total = get_monthly_total_for(sheet, choice, month)
+        messages.append(message)
+        months.append(month)
+        rounded_totals.append(rounded_total)
+
+    print(f"\n{colors.magenta}{months[0]}")
+    print(f"{colors.blue}-" * 80)
+    widths = [len(message) + 4 for message in messages]
+
+    for idx, message in enumerate(messages):
+        message_width = widths[idx] - len(message)
+        print(f"{colors.green}{message}" + " " * message_width, end=" ")
+    print()
+
+    for idx, rounded_total in enumerate(rounded_totals):
+        message_width = (widths[idx]- 1) - len(str(rounded_total))
+        print(f"{colors.white}€{rounded_total:.2f}" + " " * message_width, end=" ")
+    print("\n\n\n")
+
+    click_to_continue()
+
+
+def get_monthly_total_for(sheet, choice, month=None):
 
     if sheet == "sales":
         if choice == "total":
@@ -642,7 +679,7 @@ def get_monthly_total_for(sheet, choice):
         elif choice == "vat_total":
             message = "Total combined VAT"
             column = sales_columns.vat
-        elif chocie == "exempt_total":
+        elif choice == "exempt_total":
             message = "Total exempt from VAT"
             column = sales_columns.exempt
 
@@ -657,15 +694,17 @@ def get_monthly_total_for(sheet, choice):
         column = purchases_columns.intra_eu
         column = purchases_columns.vat
 
-    month = user_selected_month_from_available_months(sheet)
+    if month is None:
+        month = user_selected_month_from_available_months(sheet)
+
     ledger = get_selected_worksheet(sheet)
 
     totals_without_header = ledger.worksheet(month).col_values(column)[1:]
 
     combined_total = sum([float(total) for total in totals_without_header])
     rounded_total = round(combined_total, 2)
-    display_message(f"{message} for {month}: €{rounded_total}", is_warning=False)
-    totals_menu(sheet)
+
+    return (message, month, rounded_total)
 
 
 def get_total_transactions_for_all_months(sheet):
@@ -713,17 +752,35 @@ def totals_menu(sheet):
     }
 
     choice = print_selected_menu(heading, totals_menu_options)
+    if choice == "1":
+        print_monthly_totals_on_one_line(sheet)
+        totals_menu(sheet)
 
     if choice == "2":
-        get_monthly_total_for(sheet, "total")
+        message, month, rounded_total = get_monthly_total_for(sheet, "total")
+        display_message(f"{message} for {month}: €{rounded_total}", is_warning=False)
+        totals_menu(sheet)
+
     if choice == "3":
-        get_monthly_total_for(sheet, "vat_23")
+        message, month, rounded_total = get_monthly_total_for(sheet, "vat_23")
+        display_message(f"{message} for {month}: €{rounded_total}", is_warning=False)
+        totals_menu(sheet)
+
     if choice == "4":
-        get_monthly_total_for(sheet, "vat_13.5")
+        message, month, rounded_total = get_monthly_total_for(sheet, "vat_13.5")
+        display_message(f"{message} for {month}: €{rounded_total}", is_warning=False)
+        totals_menu(sheet)
+
     if choice == "5":
-        get_monthly_total_for(sheet, "vat_total")
+        message, month, rounded_total = get_monthly_total_for(sheet, "vat_total")
+        display_message(f"{message} for {month}: €{rounded_total}", is_warning=False)
+        totals_menu(sheet)
+
     if choice == "6":
-        get_monthly_total_for(sheet, "exempt_total")
+        message, month, rounded_total = get_monthly_total_for(sheet, "exempt_total")
+        display_message(f"{message} for {month}: €{rounded_total}", is_warning=False)
+        totals_menu(sheet)
+
     if choice == "7":
         get_total_transactions_for_all_months(sheet)
     if choice == "8":
