@@ -649,7 +649,7 @@ def print_monthly_totals_on_one_line(sheet):
 
     print(f"\n{colors.magenta}{months[0]}")
     print(f"{colors.blue}-" * 80)
-    widths = [len(message) + 4 for message in messages]
+    widths = [(len(message) + 4) for message in messages]
 
     for idx, message in enumerate(messages):
         message_width = widths[idx] - len(message)
@@ -659,40 +659,45 @@ def print_monthly_totals_on_one_line(sheet):
     for idx, rounded_total in enumerate(rounded_totals):
         message_width = (widths[idx]- 1) - len(str(rounded_total))
         print(f"{colors.white}€{rounded_total:.2f}" + " " * message_width, end=" ")
-    print("\n\n\n")
+
+    print("\n\n" + f"{colors.blue}-" * 80)
+    print("\n")
 
     click_to_continue()
 
 
 def get_monthly_total_for(sheet, choice, month=None):
 
+    sales_columns = sc
+    purchases_columns = pc
+
     if sheet == "sales":
         if choice == "total":
             message = "Total sales"
-            column = sales_columns.total
+            column = sc.total
         elif choice == "vat_23":
             message = "Total 23% VAT"
-            column = sales_columns.vat_23
+            column = sc.vat_23
         elif choice == "vat_13.5":
             message = "Total 13.5% VAT"
-            column = sales_columns.vat_13_5
+            column = sc.vat_13_5
         elif choice == "vat_total":
-            message = "Total combined VAT"
-            column = sales_columns.vat
+            message = "Total VAT"
+            column = sc.vat
         elif choice == "exempt_total":
-            message = "Total exempt from VAT"
-            column = sales_columns.exempt
+            message = "Total VAT exempt"
+            column = sc.exempt
 
 
     else:
-        column = purchases_columns.date
-        column = purchases_columns.details
-        column = purchases_columns.invoice_number
-        column = purchases_columns.total
-        column = purchases_columns.resale_vat
-        column = purchases_columns.non_resale_vat
-        column = purchases_columns.intra_eu
-        column = purchases_columns.vat
+        column = pc.date
+        column = pc.details
+        column = pc.invoice_number
+        column = pc.total
+        column = pc.resale_vat
+        column = pc.non_resale_vat
+        column = pc.intra_eu
+        column = pc.vat
 
     if month is None:
         month = user_selected_month_from_available_months(sheet)
@@ -702,7 +707,7 @@ def get_monthly_total_for(sheet, choice, month=None):
     totals_without_header = ledger.worksheet(month).col_values(column)[1:]
 
     combined_total = sum([float(total) for total in totals_without_header])
-    rounded_total = round(combined_total, 2)
+    rounded_total = round(float(combined_total), 2)
 
     return (message, month, rounded_total)
 
