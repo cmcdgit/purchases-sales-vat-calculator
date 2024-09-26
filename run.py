@@ -632,13 +632,27 @@ def user_selected_month_from_available_months(sheet):
         totals_menu(sheet)
 
 
-def print_monthly_totals_on_one_line(sheet):
+def print_all_monthly_totals_on_individual_lines(sheet):
+    all_months = get_list_of_all_sheet_titles(sheet)
+
+    for month in all_months:
+        print_monthly_totals_on_one_line(sheet, month, print_all_months=True)
+        # sleep added here to slow down api usage as the program was experiencing
+        # -APIError: [429]: Quota exceeded for quota metric 'Read requests'
+        #   and limit 'Read requests per minute per user
+        sleep(10)
+
+    click_to_continue()
+
+
+def print_monthly_totals_on_one_line(sheet, month=None, print_all_months=False):
     choices = ["total", "vat_23", "vat_13.5", "vat_total", "exempt_total"]
     messages = []
     months = []
     rounded_totals = []
 
-    month = user_selected_month_from_available_months(sheet)
+    if month == None:
+        month = user_selected_month_from_available_months(sheet)
 
     for choice in choices:
         message, month, rounded_total = get_monthly_total_for(sheet, choice, month)
@@ -659,44 +673,45 @@ def print_monthly_totals_on_one_line(sheet):
         message_width = (widths[idx]- 1) - len(str(rounded_total))
         print(f"{colors.white}€{rounded_total:.2f}" + " " * message_width, end=" ")
 
-    print("\n\n" + f"{colors.blue}-" * 80)
-    print("\n")
+    # print("\n\n" + f"{colors.blue}-" * 80)
 
-    click_to_continue()
+    if not print_all_months:
+        print("\n")
+        click_to_continue()
+
+    else:
+        print()
 
 
 def get_monthly_total_for(sheet, choice, month=None):
 
-    sales_columns = sc
-    purchases_columns = pc
-
     if sheet == "sales":
         if choice == "total":
             message = "Total sales"
-            column = sc.total
+            column = sales_columns.total
         elif choice == "vat_23":
             message = "Total 23% VAT"
-            column = sc.vat_23
+            column = sales_columns.vat_23
         elif choice == "vat_13.5":
             message = "Total 13.5% VAT"
-            column = sc.vat_13_5
+            column = sales_columns.vat_13_5
         elif choice == "vat_total":
             message = "Total VAT"
-            column = sc.vat
+            column = sales_columns.vat
         elif choice == "exempt_total":
             message = "Total VAT exempt"
-            column = sc.exempt
+            column = sales_columns.exempt
 
 
     else:
-        column = pc.date
-        column = pc.details
-        column = pc.invoice_number
-        column = pc.total
-        column = pc.resale_vat
-        column = pc.non_resale_vat
-        column = pc.intra_eu
-        column = pc.vat
+        column = purchases_columns.date
+        column = purchases_columns.details
+        column = purchases_columns.invoice_number
+        column = purchases_columns.total
+        column = purchases_columns.resale_vat
+        column = purchases_columns.non_resale_vat
+        column = purchases_columns.intra_eu
+        column = purchases_columns.vat
 
     if month is None:
         month = user_selected_month_from_available_months(sheet)
@@ -747,11 +762,12 @@ def totals_menu(sheet):
         "4": "Month: Total VAT (13.5%)",
         "5": "Month: Total VAT (combined)",
         "6": "Month: Total of tax exempt sales",
-        "7": "Year to date: Transactions (including VAT)",
-        "8": "Year to date: VAT (23%)",
-        "9": "Year to date: VAT (13.5%)",
-        "10": "Year to date: Total VAT (combined)",
-        "11": "Year to date: Tax exempt sales",
+        "7": "Year to date: Display all totals",
+        "8": "Year to date: Transactions (including VAT)",
+        "9": "Year to date: VAT (23%)",
+        "10": "Year to date: VAT (13.5%)",
+        "11": "Year to date: Total VAT (combined)",
+        "12": "Year to date: Tax exempt sales",
         "x": f"Back to {sheet} menu"
     }
 
@@ -786,7 +802,9 @@ def totals_menu(sheet):
         totals_menu(sheet)
 
     if choice == "7":
-        get_total_transactions_for_all_months(sheet)
+        print_all_monthly_totals_on_individual_lines(sheet)
+        totals_menu(sheet)
+
     if choice == "8":
         get_total_vat_23_for_all_months(sheet)
     if choice == "9":
