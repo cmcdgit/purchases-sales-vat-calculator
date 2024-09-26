@@ -632,6 +632,39 @@ def user_selected_month_from_available_months(sheet):
         totals_menu(sheet)
 
 
+def calculate_total_of_totals_year_to_date(sheet):
+    all_months = get_list_of_all_sheet_titles(sheet)
+
+    totals = []
+    vat_23 = []
+    vat_13_5 = []
+    vat_total = []
+    exempt_total = []
+
+    choices_dict = {
+        "total": totals,
+        "vat_23": vat_23,
+        "vat_13.5": vat_13_5,
+        "vat_total": vat_total,
+        "exempt_total": exempt_total
+    }
+
+    for choice in choices_dict.keys():
+        sleep(10)
+        for month in all_months:
+            sleep(3)
+            message, month, rounded_total = get_monthly_total_for(sheet, choice, month)
+            choices_dict[choice].append(rounded_total)
+
+    for k in choices_dict.keys():
+        print(f"{k}", end=" ")
+
+    for v in choices_dict.values():
+        print(f"{sum(v)}", end=" ")
+
+    click_to_continue()
+
+
 def print_all_monthly_totals_on_individual_lines(sheet):
     all_months = get_list_of_all_sheet_titles(sheet)
 
@@ -642,6 +675,7 @@ def print_all_monthly_totals_on_individual_lines(sheet):
         #   and limit 'Read requests per minute per user
         sleep(10)
 
+    calculate_total_of_totals_year_to_date(sheet)
     click_to_continue()
 
 
@@ -681,6 +715,7 @@ def print_monthly_totals_on_one_line(sheet, month=None, print_all_months=False):
 
     else:
         print()
+        # calculate_total_of_totals_year_to_date(sheet)
 
 
 def get_monthly_total_for(sheet, choice, month=None):
@@ -763,11 +798,12 @@ def totals_menu(sheet):
         "5": "Month: Total VAT (combined)",
         "6": "Month: Total of tax exempt sales",
         "7": "Year to date: Display all totals",
-        "8": "Year to date: Transactions (including VAT)",
-        "9": "Year to date: VAT (23%)",
-        "10": "Year to date: VAT (13.5%)",
-        "11": "Year to date: Total VAT (combined)",
-        "12": "Year to date: Tax exempt sales",
+        "8": "Year to date: Display totals",
+        "9": "Year to date: Transactions (including VAT)",
+        "10": "Year to date: VAT (23%)",
+        "11": "Year to date: VAT (13.5%)",
+        "12": "Year to date: Total VAT (combined)",
+        "13": "Year to date: Tax exempt sales",
         "x": f"Back to {sheet} menu"
     }
 
@@ -806,7 +842,9 @@ def totals_menu(sheet):
         totals_menu(sheet)
 
     if choice == "8":
-        get_total_vat_23_for_all_months(sheet)
+        calculate_total_of_totals_year_to_date(sheet)
+        totals_menu(sheet)
+
     if choice == "9":
         get_total_vat_13_5_for_all_months(sheet)
     if choice == "10":
