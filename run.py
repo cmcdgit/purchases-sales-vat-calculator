@@ -641,13 +641,28 @@ def calculate_total_of_totals_year_to_date(sheet):
     vat_total = []
     exempt_total = []
 
-    choices_dict = {
+    sales_dict = {
         "total": totals,
         "vat_23": vat_23,
         "vat_13.5": vat_13_5,
         "vat_total": vat_total,
         "exempt_total": exempt_total
     }
+
+    purchases_dict = {
+        "total": totals,
+        "vat_23": vat_23,
+        "vat_13.5": vat_13_5,
+        "vat_total": vat_total,
+        "exempt_total": exempt_total
+    }
+
+    if sheet == "sales":
+        choices_dict = sales_dict
+
+    else:
+        choices_dict = purchases_dict
+
 
     for choice in choices_dict.keys():
         sleep(10)
@@ -656,16 +671,22 @@ def calculate_total_of_totals_year_to_date(sheet):
             message, month, rounded_total = get_monthly_total_for(sheet, choice, month)
             choices_dict[choice].append(rounded_total)
 
-    for k in choices_dict.keys():
-        print(f"{k}", end=" ")
+    standard_space = 12
 
-    for v in choices_dict.values():
-        print(f"{sum(v)}", end=" ")
+    for k, v in choices_dict.items():
+        print(f"{colors.blue}{k}" + " "*(standard_space - len(k)) + f"{colors.white}{sum(v):.2f}", end=" ")
+        print()
+
+    print("\n")
+
 
     click_to_continue()
 
 
 def print_all_monthly_totals_on_individual_lines(sheet):
+    """
+
+    """
     all_months = get_list_of_all_sheet_titles(sheet)
 
     for month in all_months:
@@ -680,6 +701,9 @@ def print_all_monthly_totals_on_individual_lines(sheet):
 
 
 def print_monthly_totals_on_one_line(sheet, month=None, print_all_months=False):
+    """
+
+    """
     choices = ["total", "vat_23", "vat_13.5", "vat_total", "exempt_total"]
     messages = []
     months = []
@@ -719,7 +743,9 @@ def print_monthly_totals_on_one_line(sheet, month=None, print_all_months=False):
 
 
 def get_monthly_total_for(sheet, choice, month=None):
+    """
 
+    """
     if sheet == "sales":
         if choice == "total":
             message = "Total sales"
@@ -789,7 +815,7 @@ def totals_menu(sheet):
     """
 
     menu = "totals menu"
-    heading = "Totals"
+    heading = f"{sheet.capitalize()} totals"
     totals_menu_options = {
         "1": "Month: Display all totals",
         "2": "Month: Total transactions (including VAT)",
