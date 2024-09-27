@@ -111,7 +111,7 @@ def print_selected_menu(heading, menu_options):
     print("Select")
     print("")
     for k, v in menu_options.items():
-        print(f"\t{k} - " + f"{colors.blue}{v}")
+        print(f"\t{k: >2} - " + f"{colors.blue}{v}")
     print("")
 
     choice = request_input_from_user()
@@ -184,13 +184,13 @@ def display_message(message, wait_time=None, is_warning=True):
         click_to_continue()
 
 
-def display_wait_message():
+def display_wait_message(wait_message):
     """
     Displays a wait message to keep a user engaged while data is retrieved
     """
     print(f"{colors.blue}\n  ,,")
     print(f"{colors.blue}c(_)'", end=" ")
-    typewriter_print("This might take a few seconds...\n\n")
+    typewriter_print(f"{wait_message}...\n\n")
 
 
 def get_selected_worksheet(sheet):
@@ -253,7 +253,7 @@ def request_user_select_a_month(sheet):
         month = month.strip().lower().capitalize()
 
     if month in months:
-        display_wait_message()
+        display_wait_message("This might take a few seconds")
 
     return (month, months)
 
@@ -623,7 +623,7 @@ def user_selected_month_from_available_months(sheet):
             month = month.strip().lower().capitalize()
 
         if month in available_months:
-            display_wait_message()
+            display_wait_message("This might take a few seconds")
 
         return month
 
@@ -671,11 +671,19 @@ def calculate_total_of_totals_year_to_date(sheet):
             message, month, rounded_total = get_monthly_total_for(sheet, choice, month)
             choices_dict[choice].append(rounded_total)
 
-    standard_space = 12
+    print(f"\n{colors.magenta}{sheet.capitalize()} year-to-date totals")
+    print(f"{colors.blue}-" * 80)
+    # dict_keys_list = list(choices_dict.keys())
+    # widths = [(len(key) + 4) for key in dict_keys_list]
 
-    for k, v in choices_dict.items():
-        print(f"{colors.blue}{k}" + " "*(standard_space - len(k)) + f"{colors.white}{sum(v):.2f}", end=" ")
-        print()
+    for idx, k in enumerate(choices_dict.keys()):
+        # message_width = widths[idx] - len(k)
+        print(f"{colors.green}{k:<16}", end="")
+    print()
+
+    for idx, (k, v) in enumerate(choices_dict.items()):
+        # message_width = widths[idx] - len(str(v))
+        print(f"{colors.blue}€{sum(v):<14.2f}", end=" ")
 
     print("\n")
 
@@ -696,7 +704,7 @@ def print_all_monthly_totals_on_individual_lines(sheet):
         #   and limit 'Read requests per minute per user
         sleep(10)
 
-    calculate_total_of_totals_year_to_date(sheet)
+    calculate_total_of_totals_year_to_date(sheet) # todo: keep this (slow)
     click_to_continue()
 
 
@@ -746,6 +754,9 @@ def get_monthly_total_for(sheet, choice, month=None):
     """
 
     """
+    message = ""
+    column = ""
+
     if sheet == "sales":
         if choice == "total":
             message = "Total sales"
@@ -823,13 +834,13 @@ def totals_menu(sheet):
         "4": "Month: Total VAT (13.5%)",
         "5": "Month: Total VAT (combined)",
         "6": "Month: Total of tax exempt sales",
-        "7": "Year to date: Display all totals",
-        "8": "Year to date: Display totals",
-        "9": "Year to date: Transactions (including VAT)",
-        "10": "Year to date: VAT (23%)",
-        "11": "Year to date: VAT (13.5%)",
-        "12": "Year to date: Total VAT (combined)",
-        "13": "Year to date: Tax exempt sales",
+        "7": "Year-to-date: Display all totals",
+        "8": "Year-to-date: Display totals",
+        "9": "Year-to-date: Transactions (including VAT)",
+        "10": "Year-to-date: VAT (23%)",
+        "11": "Year-to-date: VAT (13.5%)",
+        "12": "Year-to-date: Total VAT (combined)",
+        "13": "Year-to-date: Tax exempt sales",
         "x": f"Back to {sheet} menu"
     }
 
@@ -840,34 +851,36 @@ def totals_menu(sheet):
 
     if choice == "2":
         message, month, rounded_total = get_monthly_total_for(sheet, "total")
-        display_message(f"{message} for {month}: €{rounded_total}", is_warning=False)
+        display_message(f"{message} for {month}: {colors.white}€{rounded_total:.2f}", is_warning=False)
         totals_menu(sheet)
 
     if choice == "3":
         message, month, rounded_total = get_monthly_total_for(sheet, "vat_23")
-        display_message(f"{message} for {month}: €{rounded_total}", is_warning=False)
+        display_message(f"{message} for {month}: {colors.white}€{rounded_total:.2f}", is_warning=False)
         totals_menu(sheet)
 
     if choice == "4":
         message, month, rounded_total = get_monthly_total_for(sheet, "vat_13.5")
-        display_message(f"{message} for {month}: €{rounded_total}", is_warning=False)
+        display_message(f"{message} for {month}: {colors.white}€{rounded_total:.2f}", is_warning=False)
         totals_menu(sheet)
 
     if choice == "5":
         message, month, rounded_total = get_monthly_total_for(sheet, "vat_total")
-        display_message(f"{message} for {month}: €{rounded_total}", is_warning=False)
+        display_message(f"{message} for {month}: {colors.white}€{rounded_total:.2f}", is_warning=False)
         totals_menu(sheet)
 
     if choice == "6":
         message, month, rounded_total = get_monthly_total_for(sheet, "exempt_total")
-        display_message(f"{message} for {month}: €{rounded_total}", is_warning=False)
+        display_message(f"{message} for {month}: {colors.white}€{rounded_total:.2f}", is_warning=False)
         totals_menu(sheet)
 
     if choice == "7":
+        display_wait_message("This will take a couple of minutes")
         print_all_monthly_totals_on_individual_lines(sheet)
         totals_menu(sheet)
 
     if choice == "8":
+        display_wait_message("This will take a few minutes")
         calculate_total_of_totals_year_to_date(sheet)
         totals_menu(sheet)
 
@@ -915,7 +928,7 @@ def sales_menu():
     if choice == "3":
         totals_menu(sheet)
     if choice == "4":
-        display_wait_message()
+        display_wait_message("This might take a few seconds")
         display_all_transactions_for_month(sheet)
         sales_menu()
     if choice == "5":
