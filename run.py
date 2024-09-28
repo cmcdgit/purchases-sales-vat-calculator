@@ -518,7 +518,7 @@ def create_new_sheet(sheet, dont_provide_option=False):
     else:
         exempt_heading = "Intra - EU"
 
-    headings = ["Date",	"Details", "Invoice Number", "Total", "Vat 23%", "Vat 13.5%", "VAT 9%", "VAT", f"{exempt_heading}"]
+    headings = ["Date",	"Details", "Invoice", "Total", "Vat 23%", "Vat 13.5%", "VAT 9%", "VAT", f"{exempt_heading}"]
 
     if not dont_provide_option:
         response = input("\n\tAdd a sheet for the current month? (n to create for another)" + f"{colors.green} (y/n):  \n")
