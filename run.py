@@ -153,7 +153,7 @@ def show_details_on_vat():
 
     typewriter_print("\n\tPlease check which tax rate applies if you are unsure\n")
     for k, v in irish_vat_rates.items():
-        print("\t" + "*"*80)
+        print("\t" + "*"*72)
         print(f"{Fore.LIGHTWHITE_EX}\t{k}%" + f"{Fore.BLUE}{v}")
         sleep(1.5)
 
