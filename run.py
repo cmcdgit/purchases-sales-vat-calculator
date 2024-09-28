@@ -433,7 +433,7 @@ def add_new_transaction(sheet):
         except FileNotFoundError as e:
             display_message(f"Can't find file: {e}", 3)
 
-        sales_menu()
+        sub_menu(sheet)
 
 
 def display_all_transactions_for_month(sheet, month=None):
@@ -509,7 +509,7 @@ def display_all_transactions_for_a_selected_month(sheet):
         print(f"\nAvailable months: {colors.green}{months}")
         display_message(f"Worksheet not found for chosen month, returning to {sheet} menu!", 3)
         clear_screen()
-        sales_menu()
+        sub_menu(sheet)
 
 
 def create_new_sheet(sheet):
@@ -563,10 +563,8 @@ def create_new_sheet(sheet):
                 print(f"Can't find file:\n{e}")
         else:
             display_message("Please check the value you entered!")
-            if sheet == "sales":
-                sales_menu()
-            elif sheet == "purchases":
-                purchases_menu()
+            if sheet in ["sales", "purchases"]:
+                sub_menu(sheet)
             else:
                 main_menu()
 
@@ -594,10 +592,10 @@ def main_menu():
     choice = print_selected_menu(heading, menu_options)
 
     if choice == "1":
-        sales_menu()
+        sub_menu("sales")
 
     if choice == "2":
-        purchases_menu()
+        sub_menu("purchases")
 
     if choice == "x":
         clear_screen()
@@ -665,6 +663,7 @@ def calculate_total_of_totals_year_to_date(sheet, run_directly=False):
 
     if sheet == "sales":
         choices_dict = sales_dict
+        headings_dict = sales_headings_dict
 
     else:
         choices_dict = purchases_dict
@@ -684,7 +683,7 @@ def calculate_total_of_totals_year_to_date(sheet, run_directly=False):
 
     for idx, k in enumerate(choices_dict.keys()):
         # message_width = widths[idx] - len(k)
-        print(f"{colors.green}{sales_headings_dict[k]:<16}", end="")
+        print(f"{colors.green}{headings_dict[k]:<16}", end="")
     print()
 
     for idx, (k, v) in enumerate(choices_dict.items()):
@@ -845,6 +844,7 @@ def totals_menu(sheet):
     }
 
     choice = print_selected_menu(heading, totals_menu_options)
+
     if choice == "1":
         print_monthly_totals_on_one_line(sheet)
         totals_menu(sheet)
@@ -916,21 +916,19 @@ def totals_menu(sheet):
 
     if choice == "x":
         if sheet == "sales":
-            sales_menu()
+            sub_menu(sheet)
         else:
             purchases_menu()
 
 
-def sales_menu():
+def sub_menu(sheet):
     """
     Calls the generic print_selected_menu function with
-    sales_menu specific options, heading, and handles
+    sub_menu specific options, heading, and handles
     user input
     """
-    sheet = "sales"
-    menu = "sales menu"
-    heading = "Sales"
-    sales_menu_options = {
+
+    menu_options = {
         "1": "Add a new transaction",
         "2": "Display all transactions for the current month",
         "3": "Display all transactions for a given month",
@@ -940,55 +938,25 @@ def sales_menu():
         "x": "Return to main menu"
     }
 
-    choice = print_selected_menu(heading, sales_menu_options)
+    choice = print_selected_menu(sheet.capitalize(), menu_options)
 
     if choice == "1":
         add_new_transaction(sheet)
     if choice == "2":
         display_wait_message("This might take a few seconds")
         display_all_transactions_for_month(sheet)
-        sales_menu()
+        sub_menu(sheet)
     if choice == "3":
         display_all_transactions_for_a_selected_month(sheet)
-        sales_menu()
+        sub_menu(sheet)
     if choice == "4":
         create_new_sheet(sheet)
-        sales_menu()
+        sub_menu(sheet)
     if choice == "5":
         show_details_on_vat()
-        sales_menu()
+        sub_menu(sheet)
     if choice == "6":
         totals_menu(sheet)
-
-    if choice == "x":
-        main_menu()
-
-
-def purchases_menu():
-    """
-    Calls the generic print_selected_menu function with
-    purchases_menu specific options, heading, and handles
-    user input
-     """
-
-    sheet = "purchases"
-    menu = "purchases menu"
-    heading = "Purchases"
-    purchases_menu_options = {
-        "1": "Switch to sale menu",
-        "7": "Show details on local VAT rates",
-        "x": "Return to main menu"
-    }
-
-    choice = print_selected_menu(heading, purchases_menu_options)
-
-    if choice == "1":
-        sales_menu()
-
-    if choice == "7":
-        show_details_on_vat()
-        display_countdown(menu)
-        purchases_menu()
 
     if choice == "x":
         main_menu()
