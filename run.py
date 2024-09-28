@@ -682,12 +682,12 @@ def calculate_total_of_totals_year_to_date(sheet, run_directly=False):
 
     for idx, k in enumerate(choices_dict.keys()):
         # message_width = widths[idx] - len(k)
-        print(f"{colors.green}{headings_dict[k]:<16}", end="")
+        print(f"{colors.green}{headings_dict[k]:<13}", end="")
     print()
 
     for idx, (k, v) in enumerate(choices_dict.items()):
         # message_width = widths[idx] - len(str(v))
-        print(f"{colors.blue}€{sum(v):<15.2f}", end="")
+        print(f"{colors.blue}€{sum(v):<12.2f}", end="")
 
     print("\n")
 
@@ -737,12 +737,12 @@ def print_monthly_totals_on_one_line(sheet, month=None, print_all_months=False):
 
     for idx, message in enumerate(messages):
         # message_width = widths[idx] - len(message)
-        print(f"{colors.green}{message:<16}", end="")
+        print(f"{colors.green}{message:<13}", end="")
     print()
 
     for idx, rounded_total in enumerate(rounded_totals):
         # message_width = (widths[idx]- 1) - len(str(rounded_total))
-        print(f"{colors.white}€{rounded_total:<15.2f}", end="")
+        print(f"{colors.white}€{rounded_total:<12.2f}", end="")
 
     # print("\n\n" + f"{colors.blue}-" * 80)
 
