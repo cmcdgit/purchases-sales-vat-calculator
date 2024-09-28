@@ -71,9 +71,9 @@ def print_banner(banner):
     """
     Displays a passed banner using Art package
     """
-    print('\n' + f'{colors.blue}*'*84)
-    print(f"\n\t{text2art(banner)}")
-    print('\n' + f'{colors.blue}*'*84)
+    print('\n' + f'{colors.blue}*'*80)
+    print(f"\n\t{banner}")
+    print('\n' + f'{colors.blue}*'*80)
     print("")
 
 
