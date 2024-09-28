@@ -20,6 +20,7 @@ PURCHASES_SHEET = GSPREAD_CLIENT.open('vat_purchases')
 SALES_SHEET = GSPREAD_CLIENT.open('vat_sales')
 vat_rate = None
 total_price_including_vat = None
+choice = None
 
 init()
 init(autoreset=True)
@@ -96,7 +97,7 @@ def click_to_continue():
     input(f"\n\n\t{colors.yellow}Press Enter to continue: ")
 
 
-def print_selected_menu(heading, menu_options):
+def print_selected_menu(heading, menu_options, choice_made=None):
     """
     Prints a menu requesting a user to decide whether they
     wish to update the purchases or sales google sheet.
@@ -105,6 +106,7 @@ def print_selected_menu(heading, menu_options):
     Returns: choice
     """
 
+    global choice
     clear_screen()
     print_banner(heading)
 
@@ -114,13 +116,14 @@ def print_selected_menu(heading, menu_options):
         print(f"\t{k: >2} - " + f"{colors.blue}{v}")
     print("")
 
+    choice = choice_made
+
     choice = request_input_from_user()
 
     while choice not in menu_options:
-        print("You have selected an option that does not exist, please try again...")
+        print(f"{colors.red}\nYou have selected an option that does not exist, please try again...\n")
         sleep(2)
-        print_selected_menu(heading, menu_options)
-        choice = request_input_from_user()
+        print_selected_menu(heading, menu_options, choice_made=None)
 
     return choice
 
@@ -589,7 +592,7 @@ def main_menu():
     date, time = get_current_date_and_time()
     print(f"\n{date} - {time}")
 
-    choice = print_selected_menu(heading, menu_options)
+    choice = print_selected_menu(heading, menu_options, choice_made=None)
 
     if choice == "1":
         sub_menu("sales")
@@ -843,7 +846,7 @@ def totals_menu(sheet):
         "x": f"Back to {sheet} menu"
     }
 
-    choice = print_selected_menu(heading, totals_menu_options)
+    choice = print_selected_menu(heading, totals_menu_options, choice_made=None)
 
     if choice == "1":
         print_monthly_totals_on_one_line(sheet)
@@ -938,7 +941,7 @@ def sub_menu(sheet):
         "x": "Return to main menu"
     }
 
-    choice = print_selected_menu(sheet.capitalize(), menu_options)
+    choice = print_selected_menu(sheet.capitalize(), menu_options, choice_made=None)
 
     if choice == "1":
         add_new_transaction(sheet)
