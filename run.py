@@ -35,28 +35,16 @@ class colors:
     magenta = Fore.MAGENTA
 
 
-class sales_columns:
+class columns:
     date = 1
     details = 2
     invoice_number = 3
     total = 4
     vat_23 = 5
     vat_13_5 = 6
-    vat = 7
-    exempt = 8
-
-
-
-class purchases_columns:
-    date = 1
-    details = 2
-    invoice_number = 3
-    total = 4
-    resale_vat = 5
-    non_resale_vat = 6
-    intra_eu = 7
+    vat_9 = 7
     vat = 8
-
+    exempt = 9
 
 
 # functions for handling output/input
@@ -214,7 +202,8 @@ def get_current_date_and_time():
     """
     now = datetime.datetime.now()
 
-    date = now.strftime("%d/%m/%Y")
+    # using (month/day/year) format for better google sheets integraton
+    date = now.strftime("%m/%d/%Y")
     time = now.strftime("%H:%M:%S")
     return (date, time)
 
@@ -282,11 +271,7 @@ def get_length_of_longest_list_item(list_to_check):
     return len(sorted(list_to_check, key=len, reverse=True)[0])
 
 
-def request_new_purchases_transaction():
-    pass
-
-
-def request_new_sales_transaction(details=None, price_including_vat=None, rate=None):
+def request_new_transaction(sheet, details=None, price_including_vat=None, rate=None):
     """
     Function to collect the info needed to add a new sales transaction to the google sheet
     """
@@ -294,9 +279,9 @@ def request_new_sales_transaction(details=None, price_including_vat=None, rate=N
     global vat_rate
 
     clear_screen()
-    print_banner("Add new sale")
+    print_banner(f"Add {sheet}")
 
-    print("Please provide details of the new sales transaction here:\n\n")
+    print(f"Please provide details of the new {sheet} transaction here:\n\n")
 
     # Questions as variables so size can be determined to neatly display output
     details_q = "Details"
@@ -326,7 +311,7 @@ def request_new_sales_transaction(details=None, price_including_vat=None, rate=N
 
         except ValueError:
             display_message("Please check that the total price is a number", 0)
-            request_new_sales_transaction(details=details)
+            request_new_transaction(sheet=sheet, details=details)
 
     else:
         print(formatted_price_q + str(total_price_including_vat))
@@ -341,11 +326,11 @@ def request_new_sales_transaction(details=None, price_including_vat=None, rate=N
             pass
         elif vat_rate == None or vat_rate == "":
             show_details_on_vat()
-            request_new_sales_transaction(details=details, price_including_vat=total_price_including_vat)
+            request_new_transaction(sheet=sheet, details=details, price_including_vat=total_price_including_vat)
         else:
             display_message("Please check this is a valid tax rate", 2)
             show_details_on_vat()
-            request_new_sales_transaction(details=details, price_including_vat=total_price_including_vat)
+            request_new_transaction(sheet=sheet, details=details, price_including_vat=total_price_including_vat)
 
 
     return (details, total_price_including_vat, vat_rate)
@@ -358,22 +343,28 @@ def calculate_vat(total_price_including_vat, vat_rate):
     """
     vat_applicable = round(((float(total_price_including_vat) * float(vat_rate)) / 100), 2)
 
+    # return [vat 23%, vat 13.5%, vat 9%, total vat, exempt]
     if vat_rate == "23":
-        return [vat_applicable, 0, vat_applicable, 0]
+        return [vat_applicable, 0, 0, vat_applicable, 0]
 
     elif vat_rate == "13.5":
-        return [0, vat_applicable, vat_applicable, 0]
+        return [0, vat_applicable, 0, vat_applicable, 0]
+
+    elif vat_rate == "9":
+        return [0, 0, vat_applicable, vat_applicable, 0]
 
     elif vat_rate == "0":
-        return [0, 0, 0, total_price_including_vat]
+        return [0, 0, 0, 0, total_price_including_vat]
 
 
-def generate_next_invoice_number(ledger):
+def generate_next_invoice_number(sheet):
     """
     Function to get the last available invoice number on a google sheet and iterates it by 1
     """
 
-    all_months = get_list_of_all_sheet_titles(ledger)
+    ledger = get_selected_worksheet(sheet)
+
+    all_months = get_list_of_all_sheet_titles(sheet)
     number_of_available_months = len(all_months)
     all_months = reversed(all_months)
 
@@ -383,7 +374,7 @@ def generate_next_invoice_number(ledger):
         last_row = all_data[-1]
 
         # subtracting 1 below to account for gspread column v list numbering
-        last_invoice_number = last_row[sales_columns.invoice_number - 1]
+        last_invoice_number = last_row[columns.invoice_number - 1]
 
         try:
             if str(last_invoice_number).isnumeric:
@@ -393,7 +384,7 @@ def generate_next_invoice_number(ledger):
             pass
 
 
-def create_sheet_if_not_available(sheet):
+def create_sheet_if_not_available(sheet, dont_provide_option=False):
     """
     Function to check if a sheet for a particular month is
     available, and direct a user to create one if necessary.
@@ -403,7 +394,7 @@ def create_sheet_if_not_available(sheet):
 
     if month not in available_months:
         display_message(f"No sheet available for {month}", 1)
-        create_new_sheet(sheet)
+        create_new_sheet(sheet, dont_provide_option)
 
 
 def add_new_transaction(sheet):
@@ -416,27 +407,24 @@ def add_new_transaction(sheet):
 
     create_sheet_if_not_available(sheet)
 
-    if sheet == "purchases":
-        request_new_purchases_transaction()
-    else:
-        details, total_price_including_vat, vat_rate = request_new_sales_transaction()
-        date, time = get_current_date_and_time()
-        invoice_number = generate_next_invoice_number(ledger)
-        if invoice_number is None or invoice_number == "":
-            invoice_number = input(f"{colors.red}\n\tNo invoice number available, please manually enter one: {colors.white}")
-        formatted_vat_details = calculate_vat(total_price_including_vat, vat_rate)
+    details, total_price_including_vat, vat_rate = request_new_transaction(sheet=sheet)
+    date, time = get_current_date_and_time()
+    invoice_number = generate_next_invoice_number(sheet)
+    if invoice_number is None or invoice_number == "":
+        invoice_number = input(f"{colors.red}\n\tNo invoice number available, please manually enter one: {colors.white}")
+    formatted_vat_details = calculate_vat(total_price_including_vat, vat_rate)
 
-        formatted_row = [date, details,invoice_number,total_price_including_vat] + formatted_vat_details
+    formatted_row = [date, details, invoice_number, total_price_including_vat] + formatted_vat_details
 
-        try:
-            month = get_month()
-            ledger.worksheet(month).append_row(formatted_row)
-            display_message("Sheet updated successfully", 2, False)
+    try:
+        month = get_month()
+        ledger.worksheet(month).append_row(formatted_row)
+        display_message("Sheet updated successfully", 2, False)
 
-        except FileNotFoundError as e:
-            display_message(f"Can't find file: {e}", 3)
+    except FileNotFoundError as e:
+        display_message(f"Can't find file: {e}", 3)
 
-        sub_menu(sheet)
+    sub_menu(sheet)
 
 
 def display_all_transactions_for_month(sheet, month=None):
@@ -447,6 +435,7 @@ def display_all_transactions_for_month(sheet, month=None):
     """
     ledger = get_selected_worksheet(sheet)
     if month is None:
+        create_sheet_if_not_available(sheet, dont_provide_option=True)
         month = get_month()
 
     num_of_rows = len(ledger.worksheet(month).col_values(1))
@@ -515,7 +504,7 @@ def display_all_transactions_for_a_selected_month(sheet):
         sub_menu(sheet)
 
 
-def create_new_sheet(sheet):
+def create_new_sheet(sheet, dont_provide_option=False):
     """
     Function to create a new sheet for the current month or a given month.
     """
@@ -523,9 +512,20 @@ def create_new_sheet(sheet):
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
     ]
-    headings = ["Date",	"Details", "Invoice Number", "Total", "Vat 23%", "Vat 13.5%", "VAT", "Exempt or export"]
-    response = input("\n\tAdd a sheet for the current month? (n to create for another)" + f"{colors.green} (y/n):  ")
-    response = response.lower().strip()
+
+    if sheet == "sales":
+        exempt_heading = "Exempt or export"
+    else:
+        exempt_heading = "Intra - EU"
+
+    headings = ["Date",	"Details", "Invoice Number", "Total", "Vat 23%", "Vat 13.5%", "VAT 9%", "VAT", f"{exempt_heading}"]
+
+    if not dont_provide_option:
+        response = input("\n\tAdd a sheet for the current month? (n to create for another)" + f"{colors.green} (y/n):  ")
+        response = response.lower().strip()
+
+    else:
+        response = "y"
 
     if response.startswith("y"):
         month = get_month()
@@ -534,7 +534,7 @@ def create_new_sheet(sheet):
         try:
             ledger.add_worksheet(month, rows=150, cols=10)
             ledger.worksheet(month).append_row(headings)
-            ledger.worksheet(month).format("A1:H1", { 'backgroundColor': {
+            ledger.worksheet(month).format("A1:I1", { 'backgroundColor': {
                 'blue': 0.65882355,
                 'green': 0.84313726,
                 'red': 0.7137255
@@ -555,7 +555,7 @@ def create_new_sheet(sheet):
             try:
                 ledger.add_worksheet(new_month, rows=150, cols=10)
                 ledger.worksheet(new_month).append_row(headings)
-                ledger.worksheet(new_month).format("A1:H1", { 'backgroundColor': {
+                ledger.worksheet(new_month).format("A1:I1", { 'backgroundColor': {
                     'blue': 0.65882355,
                     'green': 0.84313726,
                     'red': 0.7137255
@@ -637,39 +637,35 @@ def calculate_total_of_totals_year_to_date(sheet, run_directly=False):
     totals = []
     vat_23 = []
     vat_13_5 = []
+    vat_9 = []
     vat_total = []
     exempt_total = []
 
-    sales_dict = {
+    choices_dict = {
         "total": totals,
         "vat_23": vat_23,
         "vat_13.5": vat_13_5,
-        "vat_total": vat_total,
-        "exempt_total": exempt_total
-    }
-
-    sales_headings_dict = {
-        "total": "Sales",
-        "vat_23": "23% VAT",
-        "vat_13.5": "13.5% VAT",
-        "vat_total": "VAT",
-        "exempt_total": "VAT exempt",
-    }
-
-    purchases_dict = {
-        "total": totals,
-        "vat_23": vat_23,
-        "vat_13.5": vat_13_5,
+        "vat_9": vat_9,
         "vat_total": vat_total,
         "exempt_total": exempt_total
     }
 
     if sheet == "sales":
-        choices_dict = sales_dict
-        headings_dict = sales_headings_dict
+        exempt_heading = "Exempt or export"
 
     else:
-        choices_dict = purchases_dict
+        exempt_heading = "Intra - EU"
+
+
+    headings_dict = {
+        "total": "Sales",
+        "vat_23": "23% VAT",
+        "vat_13.5": "13.5% VAT",
+        "vat_9": "9% VAT",
+        "vat_total": "VAT",
+        "exempt_total": exempt_heading,
+    }
+
 
 
     for choice in choices_dict.keys():
@@ -721,7 +717,7 @@ def print_monthly_totals_on_one_line(sheet, month=None, print_all_months=False):
     """
 
     """
-    choices = ["total", "vat_23", "vat_13.5", "vat_total", "exempt_total"]
+    choices = ["total", "vat_23", "vat_13.5", "vat_9", "vat_total", "exempt_total"]
     messages = []
     months = []
     rounded_totals = []
@@ -762,35 +758,33 @@ def get_monthly_total_for(sheet, choice, month=None):
     """
 
     """
-    message = ""
-    column = ""
 
-    if sheet == "sales":
-        if choice == "total":
-            message = "Sales"
-            column = sales_columns.total
-        elif choice == "vat_23":
-            message = "23% VAT"
-            column = sales_columns.vat_23
-        elif choice == "vat_13.5":
-            message = "13.5% VAT"
-            column = sales_columns.vat_13_5
-        elif choice == "vat_total":
-            message = "VAT"
-            column = sales_columns.vat
-        elif choice == "exempt_total":
+    if choice == "total":
+        message = sheet.capitalize()
+        column = columns.total
+
+    elif choice == "vat_23":
+        message = "23% VAT"
+        column = columns.vat_23
+
+    elif choice == "vat_13.5":
+        message = "13.5% VAT"
+        column = columns.vat_13_5
+
+    elif choice == "vat_9":
+        message = "9% VAT"
+        column = columns.vat_9
+
+    elif choice == "vat_total":
+        message = "VAT"
+        column = columns.vat
+
+    elif choice == "exempt_total":
+        column = columns.exempt
+        if sheet == "sales":
             message = "VAT exempt"
-            column = sales_columns.exempt
-
-    else:
-        column = purchases_columns.date
-        column = purchases_columns.details
-        column = purchases_columns.invoice_number
-        column = purchases_columns.total
-        column = purchases_columns.resale_vat
-        column = purchases_columns.non_resale_vat
-        column = purchases_columns.intra_eu
-        column = purchases_columns.vat
+        else:
+            message = "Intra - EU"
 
     if month is None:
         month = user_selected_month_from_available_months(sheet)
@@ -834,15 +828,17 @@ def totals_menu(sheet):
         "2": f"Month: {sheet.capitalize()} (including VAT)",
         "3": "Month: VAT (23%)",
         "4": "Month: VAT (13.5%)",
-        "5": "Month: VAT (combined)",
-        "6": f"Month: Tax exempt {sheet}",
-        "7": "Year-to-date: Display all totals",
-        "8": "Year-to-date: Display totals",
-        "9": f"Year-to-date: {sheet.capitalize()} (including VAT)",
-        "10": "Year-to-date: VAT (23%)",
-        "11": "Year-to-date: VAT (13.5%)",
-        "12": "Year-to-date: Total VAT (combined)",
-        "13": f"Year-to-date: Tax exempt {sheet}",
+        "5": "Month: VAT (9%)",
+        "6": "Month: VAT (combined)",
+        "7": f"Month: Tax exempt {sheet}",
+        "8": "Year-to-date: Display all totals",
+        "9": "Year-to-date: Display totals",
+        "10": f"Year-to-date: {sheet.capitalize()} (including VAT)",
+        "11": "Year-to-date: VAT (23%)",
+        "12": "Year-to-date: VAT (13.5%)",
+        "13": "Year-to-date: VAT (9%)",
+        "14": "Year-to-date: Total VAT (combined)",
+        "15": f"Year-to-date: Tax exempt {sheet}",
         "x": f"Back to {sheet} menu"
     }
 
@@ -868,60 +864,68 @@ def totals_menu(sheet):
         totals_menu(sheet)
 
     if choice == "5":
-        message, month, rounded_total = get_monthly_total_for(sheet, "vat_total")
+        message, month, rounded_total = get_monthly_total_for(sheet, "vat_9")
         display_message(f"{message} for {month}: {colors.white}€{rounded_total:.2f}", is_warning=False)
         totals_menu(sheet)
 
     if choice == "6":
-        message, month, rounded_total = get_monthly_total_for(sheet, "exempt_total")
+        message, month, rounded_total = get_monthly_total_for(sheet, "vat_total")
         display_message(f"{message} for {month}: {colors.white}€{rounded_total:.2f}", is_warning=False)
         totals_menu(sheet)
 
     if choice == "7":
-        display_wait_message("This will take a few minutes")
-        print_all_monthly_totals_on_individual_lines(sheet)
+        message, month, rounded_total = get_monthly_total_for(sheet, "exempt_total")
+        display_message(f"{message} for {month}: {colors.white}€{rounded_total:.2f}", is_warning=False)
         totals_menu(sheet)
 
     if choice == "8":
         display_wait_message("This will take a few minutes")
-        calculate_total_of_totals_year_to_date(sheet, run_directly=True)
+        print_all_monthly_totals_on_individual_lines(sheet)
         totals_menu(sheet)
 
     if choice == "9":
+        display_wait_message("This will take a few minutes")
+        calculate_total_of_totals_year_to_date(sheet, run_directly=True)
+        totals_menu(sheet)
+
+    if choice == "10":
         display_wait_message("This might take a few seconds")
         message, month, rounded_total = get_total_for_all_months("total", sheet)
         display_message(f"{message} for {month}: {colors.white}€{rounded_total:.2f}", is_warning=False)
         totals_menu(sheet)
 
-    if choice == "10":
+    if choice == "11":
         display_wait_message("This might take a few seconds")
         message, month, rounded_total = get_total_for_all_months("vat_23", sheet)
         display_message(f"{message} for {month}: {colors.white}€{rounded_total:.2f}", is_warning=False)
         totals_menu(sheet)
 
-    if choice == "11":
+    if choice == "12":
         display_wait_message("This might take a few seconds")
         message, month, rounded_total = get_total_for_all_months("vat_13.5", sheet)
         display_message(f"{message} for {month}: {colors.white}€{rounded_total:.2f}", is_warning=False)
         totals_menu(sheet)
 
-    if choice == "12":
+    if choice == "13":
+        display_wait_message("This might take a few seconds")
+        message, month, rounded_total = get_total_for_all_months("vat_9", sheet)
+        display_message(f"{message} for {month}: {colors.white}€{rounded_total:.2f}", is_warning=False)
+        totals_menu(sheet)
+
+    if choice == "14":
         display_wait_message("This might take a few seconds")
         message, month, rounded_total = get_total_for_all_months("vat_total", sheet)
         display_message(f"{message} for {month}: {colors.white}€{rounded_total:.2f}", is_warning=False)
         totals_menu(sheet)
 
-    if choice == "13":
+    if choice == "15":
         display_wait_message("This might take a few seconds")
         message, month, rounded_total = get_total_for_all_months("exempt_total", sheet)
         display_message(f"{message} for {month}: {colors.white}€{rounded_total:.2f}", is_warning=False)
         totals_menu(sheet)
 
     if choice == "x":
-        if sheet == "sales":
-            sub_menu(sheet)
-        else:
-            purchases_menu()
+        sub_menu(sheet)
 
 
 def sub_menu(sheet):
@@ -935,7 +939,7 @@ def sub_menu(sheet):
         "1": "Add a new transaction",
         "2": "Display all transactions for the current month",
         "3": "Display all transactions for a given month",
-        "4": "Create a new sales sheet for the current month (if none yet exists)",
+        "4": f"Create a new {sheet} sheet for the current month (if none yet exists)",
         "5": "Show details on local VAT rates",
         "6": "Display 'Totals' menu",
         "x": "Return to main menu"
