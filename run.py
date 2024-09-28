@@ -292,7 +292,7 @@ def request_new_transaction(sheet, details=None, price_including_vat=None, rate=
 
     space = "  \n"
     formatted_details_q = f"{details_q}" + "."*(width - len(details_q)) + space
-    formatted_price_q = f"{totals_q}" + "."*(width - len(totals_q)) + space
+    formatted_price_q = f"{totals_q}" + "."*(width - len(totals_q)) + space + "€"
     formatted_vat_rate_q = f"{vat_rate_q}" + "."*(width - len(vat_rate_q)) + space
 
     vat_rate = rate
