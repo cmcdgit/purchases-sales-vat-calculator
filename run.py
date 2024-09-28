@@ -436,10 +436,6 @@ def add_new_transaction(sheet):
         sales_menu()
 
 
-def edit_transaction(sheet):
-    pass
-
-
 def display_all_transactions_for_month(sheet, month=None):
     """
     Function to display google worksheet to the terminal for inspection purposes
@@ -459,6 +455,8 @@ def display_all_transactions_for_month(sheet, month=None):
         new_list = ledger.worksheet(month).col_values(i + 1)
         columns.insert(i, new_list)
 
+    print(f"\n{colors.magenta}{month}")
+    print(f"{colors.blue}-" * 80)
 
     dont_color = True
 
@@ -782,7 +780,6 @@ def get_monthly_total_for(sheet, choice, month=None):
             message = "VAT exempt"
             column = sales_columns.exempt
 
-
     else:
         column = purchases_columns.date
         column = purchases_columns.details
@@ -806,24 +803,19 @@ def get_monthly_total_for(sheet, choice, month=None):
     return (message, month, rounded_total)
 
 
-def get_total_transactions_for_all_months(sheet):
-    pass
+def get_total_for_all_months(column, sheet):
+    months = get_list_of_all_sheet_titles(sheet)
 
+    messages = []
+    all_months = "'all months'"
+    rounded_totals = []
 
-def get_total_vat_23_for_all_months(sheet):
-    pass
+    for month in months:
+        message, month, rounded_total = get_monthly_total_for(sheet, column, month)
+        messages.append(message)
+        rounded_totals.append(rounded_total)
 
-
-def get_total_vat_13_5_for_all_months(sheet):
-    pass
-
-
-def get_total_vat_combined_for_all_months(sheet):
-    pass
-
-
-def get_total_vat_exempt_for_all_months(sheet):
-    pass
+    return (messages[0], all_months, sum(rounded_totals))
 
 
 def totals_menu(sheet):
@@ -837,18 +829,18 @@ def totals_menu(sheet):
     heading = f"{sheet.capitalize()} totals"
     totals_menu_options = {
         "1": "Month: Display all totals",
-        "2": "Month: Total transactions (including VAT)",
-        "3": "Month: Total VAT (23%)",
-        "4": "Month: Total VAT (13.5%)",
-        "5": "Month: Total VAT (combined)",
-        "6": "Month: Total of tax exempt sales",
+        "2": f"Month: {sheet.capitalize()} (including VAT)",
+        "3": "Month: VAT (23%)",
+        "4": "Month: VAT (13.5%)",
+        "5": "Month: VAT (combined)",
+        "6": f"Month: Tax exempt {sheet}",
         "7": "Year-to-date: Display all totals",
         "8": "Year-to-date: Display totals",
-        "9": "Year-to-date: Transactions (including VAT)",
+        "9": f"Year-to-date: {sheet.capitalize()} (including VAT)",
         "10": "Year-to-date: VAT (23%)",
         "11": "Year-to-date: VAT (13.5%)",
         "12": "Year-to-date: Total VAT (combined)",
-        "13": "Year-to-date: Tax exempt sales",
+        "13": f"Year-to-date: Tax exempt {sheet}",
         "x": f"Back to {sheet} menu"
     }
 
@@ -893,11 +885,34 @@ def totals_menu(sheet):
         totals_menu(sheet)
 
     if choice == "9":
-        get_total_vat_13_5_for_all_months(sheet)
+        display_wait_message("This might take a few seconds")
+        message, month, rounded_total = get_total_for_all_months("total", sheet)
+        display_message(f"{message} for {month}: {colors.white}€{rounded_total:.2f}", is_warning=False)
+        totals_menu(sheet)
+
     if choice == "10":
-        get_total_vat_combined_for_all_months(sheet)
+        display_wait_message("This might take a few seconds")
+        message, month, rounded_total = get_total_for_all_months("vat_23", sheet)
+        display_message(f"{message} for {month}: {colors.white}€{rounded_total:.2f}", is_warning=False)
+        totals_menu(sheet)
+
     if choice == "11":
-        get_total_vat_exempt_for_all_months(sheet)
+        display_wait_message("This might take a few seconds")
+        message, month, rounded_total = get_total_for_all_months("vat_13.5", sheet)
+        display_message(f"{message} for {month}: {colors.white}€{rounded_total:.2f}", is_warning=False)
+        totals_menu(sheet)
+
+    if choice == "12":
+        display_wait_message("This might take a few seconds")
+        message, month, rounded_total = get_total_for_all_months("vat_total", sheet)
+        display_message(f"{message} for {month}: {colors.white}€{rounded_total:.2f}", is_warning=False)
+        totals_menu(sheet)
+
+    if choice == "13":
+        display_wait_message("This might take a few seconds")
+        message, month, rounded_total = get_total_for_all_months("exempt_total", sheet)
+        display_message(f"{message} for {month}: {colors.white}€{rounded_total:.2f}", is_warning=False)
+        totals_menu(sheet)
 
     if choice == "x":
         if sheet == "sales":
@@ -917,13 +932,11 @@ def sales_menu():
     heading = "Sales"
     sales_menu_options = {
         "1": "Add a new transaction",
-        "2": "Edit a transaction (nw)",
-        "3": "Totals menu",
-        "4": "Display all transactions for the current month",
-        "5": "Display last 7 transactions for the current month (nw)",
-        "6": "Display all transactions for a given month",
-        "7": "Create a new sales sheet for the current month (if none yet exists)",
-        "8": "Show details on local VAT rates",
+        "2": "Display all transactions for the current month",
+        "3": "Display all transactions for a given month",
+        "4": "Create a new sales sheet for the current month (if none yet exists)",
+        "5": "Show details on local VAT rates",
+        "6": "Display 'Totals' menu",
         "x": "Return to main menu"
     }
 
@@ -932,24 +945,20 @@ def sales_menu():
     if choice == "1":
         add_new_transaction(sheet)
     if choice == "2":
-        edit_transaction(sheet)
-    if choice == "3":
-        totals_menu(sheet)
-    if choice == "4":
         display_wait_message("This might take a few seconds")
         display_all_transactions_for_month(sheet)
         sales_menu()
-    if choice == "5":
-        display_last_7_transactions_for_current_month(sheet)
-    if choice == "6":
+    if choice == "3":
         display_all_transactions_for_a_selected_month(sheet)
         sales_menu()
-    if choice == "7":
+    if choice == "4":
         create_new_sheet(sheet)
         sales_menu()
-    if choice == "8":
+    if choice == "5":
         show_details_on_vat()
         sales_menu()
+    if choice == "6":
+        totals_menu(sheet)
 
     if choice == "x":
         main_menu()
