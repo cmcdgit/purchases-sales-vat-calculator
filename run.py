@@ -13,8 +13,8 @@ SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets"
     ]
 
-CREDS = Credentials.from_service_account_file('credentials.json')
-SCOPED_CREDS = CREDS.with_scopes(SCOPE)
+CREDENTIALS = Credentials.from_service_account_file('credentials.json')
+SCOPED_CREDS = CREDENTIALS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 PURCHASES_SHEET = GSPREAD_CLIENT.open('vat_purchases')
 SALES_SHEET = GSPREAD_CLIENT.open('vat_sales')
