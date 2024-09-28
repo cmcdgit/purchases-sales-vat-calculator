@@ -81,7 +81,7 @@ def click_to_continue():
     Request a user press enter to continue, used in a few places so
     broken out to a function for consistent display across the app
     """
-    input(f"\n\n\t{colors.yellow}Press Enter to continue: ")
+    input(f"\n\n\t{colors.yellow}Press Enter to continue: \n")
 
 
 def print_selected_menu(heading, menu_options, choice_made=None):
@@ -233,14 +233,14 @@ def request_user_select_a_month(sheet):
     """
     Function to request a user selects a month from available months
     """
-    month = input("\nPlease select a month to review " + f"{colors.green}(Press L to list available months): ")
+    month = input("\nPlease select a month to review " + f"{colors.green}(Press L to list available months): \n")
     month = month.strip().lower().capitalize()
 
     months = get_list_of_all_sheet_titles(sheet)
 
     if month.startswith("L"):
         print(months)
-        month = input("\nPlease make a selection: ")
+        month = input("\nPlease make a selection: \n")
         month = month.strip().lower().capitalize()
 
     if month in months:
@@ -289,9 +289,9 @@ def request_new_transaction(sheet, details=None, price_including_vat=None, rate=
 
     width = get_length_of_longest_list_item([details_q, totals_q, vat_rate_q])
 
-    space = "  "
+    space = "  \n"
     formatted_details_q = f"{details_q}" + "."*(width - len(details_q)) + space
-    formatted_price_q = f"{totals_q}" + "."*(width - len(totals_q)) + space + "€"
+    formatted_price_q = f"{totals_q}" + "."*(width - len(totals_q)) + space
     formatted_vat_rate_q = f"{vat_rate_q}" + "."*(width - len(vat_rate_q)) + space
 
     vat_rate = rate
@@ -410,7 +410,7 @@ def add_new_transaction(sheet):
     date, time = get_current_date_and_time()
     invoice_number = generate_next_invoice_number(sheet)
     if invoice_number is None or invoice_number == "":
-        invoice_number = input(f"{colors.red}\n\tNo invoice number available, please manually enter one: {colors.white}")
+        invoice_number = input(f"{colors.red}\n\tNo invoice number available, please manually enter one: {colors.white}\n")
     formatted_vat_details = calculate_vat(total_price_including_vat, vat_rate)
 
     formatted_row = [date, details, invoice_number, total_price_including_vat] + formatted_vat_details
@@ -520,7 +520,7 @@ def create_new_sheet(sheet, dont_provide_option=False):
     headings = ["Date",	"Details", "Invoice Number", "Total", "Vat 23%", "Vat 13.5%", "VAT 9%", "VAT", f"{exempt_heading}"]
 
     if not dont_provide_option:
-        response = input("\n\tAdd a sheet for the current month? (n to create for another)" + f"{colors.green} (y/n):  ")
+        response = input("\n\tAdd a sheet for the current month? (n to create for another)" + f"{colors.green} (y/n):  \n")
         response = response.lower().strip()
 
     else:
@@ -545,7 +545,7 @@ def create_new_sheet(sheet, dont_provide_option=False):
     elif response.startswith("n"):
         months = get_list_of_all_sheet_titles(sheet)
         print(f"\n\t{colors.green}Already created: " + f"\n\t{colors.white}{months}\n")
-        new_month = input("\n\tWhich month would you like to add?  ")
+        new_month = input("\n\tWhich month would you like to add?  \n")
         new_month = new_month.strip().lower().capitalize()
 
         if new_month not in months and new_month in all_months:
@@ -617,7 +617,7 @@ def user_selected_month_from_available_months(sheet):
         month = None
         while month not in available_months:
             print(f"\nAvailable months: {colors.green}{available_months}")
-            month = input("\nPlease enter a month from the available options: ")
+            month = input("\nPlease enter a month from the available options: \n")
             month = month.strip().lower().capitalize()
 
         if month in available_months:
