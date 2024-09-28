@@ -632,7 +632,7 @@ def user_selected_month_from_available_months(sheet):
         totals_menu(sheet)
 
 
-def calculate_total_of_totals_year_to_date(sheet):
+def calculate_total_of_totals_year_to_date(sheet, run_directly=False):
     all_months = get_list_of_all_sheet_titles(sheet)
 
     totals = []
@@ -647,6 +647,14 @@ def calculate_total_of_totals_year_to_date(sheet):
         "vat_13.5": vat_13_5,
         "vat_total": vat_total,
         "exempt_total": exempt_total
+    }
+
+    sales_headings_dict = {
+        "total": "Sales",
+        "vat_23": "23% VAT",
+        "vat_13.5": "13.5% VAT",
+        "vat_total": "VAT",
+        "exempt_total": "VAT exempt",
     }
 
     purchases_dict = {
@@ -678,17 +686,18 @@ def calculate_total_of_totals_year_to_date(sheet):
 
     for idx, k in enumerate(choices_dict.keys()):
         # message_width = widths[idx] - len(k)
-        print(f"{colors.green}{k:<16}", end="")
+        print(f"{colors.green}{sales_headings_dict[k]:<16}", end="")
     print()
 
     for idx, (k, v) in enumerate(choices_dict.items()):
         # message_width = widths[idx] - len(str(v))
-        print(f"{colors.blue}€{sum(v):<14.2f}", end=" ")
+        print(f"{colors.blue}€{sum(v):<15.2f}", end="")
 
     print("\n")
 
-
-    click_to_continue()
+    # avoid needing to click to continue twice when this is run as part of totals menu option 7
+    if run_directly:
+        click_to_continue()
 
 
 def print_all_monthly_totals_on_individual_lines(sheet):
@@ -726,18 +735,18 @@ def print_monthly_totals_on_one_line(sheet, month=None, print_all_months=False):
         months.append(month)
         rounded_totals.append(rounded_total)
 
-    print(f"\n{colors.magenta}{months[0]}")
+    print(f"\n{colors.magenta}{months[0]} totals")
     print(f"{colors.blue}-" * 80)
-    widths = [(len(message) + 4) for message in messages]
+    # widths = [(len(message) + 4) for message in messages]
 
     for idx, message in enumerate(messages):
-        message_width = widths[idx] - len(message)
-        print(f"{colors.green}{message}" + " " * message_width, end=" ")
+        # message_width = widths[idx] - len(message)
+        print(f"{colors.green}{message:<16}", end="")
     print()
 
     for idx, rounded_total in enumerate(rounded_totals):
-        message_width = (widths[idx]- 1) - len(str(rounded_total))
-        print(f"{colors.white}€{rounded_total:.2f}" + " " * message_width, end=" ")
+        # message_width = (widths[idx]- 1) - len(str(rounded_total))
+        print(f"{colors.white}€{rounded_total:<15.2f}", end="")
 
     # print("\n\n" + f"{colors.blue}-" * 80)
 
@@ -747,7 +756,6 @@ def print_monthly_totals_on_one_line(sheet, month=None, print_all_months=False):
 
     else:
         print()
-        # calculate_total_of_totals_year_to_date(sheet)
 
 
 def get_monthly_total_for(sheet, choice, month=None):
@@ -759,19 +767,19 @@ def get_monthly_total_for(sheet, choice, month=None):
 
     if sheet == "sales":
         if choice == "total":
-            message = "Total sales"
+            message = "Sales"
             column = sales_columns.total
         elif choice == "vat_23":
-            message = "Total 23% VAT"
+            message = "23% VAT"
             column = sales_columns.vat_23
         elif choice == "vat_13.5":
-            message = "Total 13.5% VAT"
+            message = "13.5% VAT"
             column = sales_columns.vat_13_5
         elif choice == "vat_total":
-            message = "Total VAT"
+            message = "VAT"
             column = sales_columns.vat
         elif choice == "exempt_total":
-            message = "Total VAT exempt"
+            message = "VAT exempt"
             column = sales_columns.exempt
 
 
@@ -875,13 +883,13 @@ def totals_menu(sheet):
         totals_menu(sheet)
 
     if choice == "7":
-        display_wait_message("This will take a couple of minutes")
+        display_wait_message("This will take a few minutes")
         print_all_monthly_totals_on_individual_lines(sheet)
         totals_menu(sheet)
 
     if choice == "8":
         display_wait_message("This will take a few minutes")
-        calculate_total_of_totals_year_to_date(sheet)
+        calculate_total_of_totals_year_to_date(sheet, run_directly=True)
         totals_menu(sheet)
 
     if choice == "9":
