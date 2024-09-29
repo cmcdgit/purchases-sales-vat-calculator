@@ -587,6 +587,13 @@ def create_new_sheet(sheet, dont_provide_option=False):
         "July", "August", "September", "October", "November", "December"
     ]
 
+    month = get_month()
+    available_months = get_list_of_all_sheet_titles(sheet)
+
+    if month in available_months:
+        display_message("A sheet exists for the current month", 3)
+        sub_menu(sheet)
+
     if sheet == "sales":
         exempt_heading = "Exempt or export"
     else:
