@@ -595,9 +595,9 @@ def create_new_sheet(sheet, dont_provide_option=False):
         sub_menu(sheet)
 
     if sheet == "sales":
-        exempt_heading = "Exempt or export"
+        exempt_heading = "Exempt"
     else:
-        exempt_heading = "Intra - EU"
+        exempt_heading = "Intra-EU"
 
     headings = ["Date",	"Details", "Invoice", "Total", "Vat 23%",
                 "Vat 13.5%", "VAT 9%", "VAT", f"{exempt_heading}"
@@ -746,10 +746,10 @@ def calculate_total_of_totals_year_to_date(sheet, run_directly=False):
     }
 
     if sheet == "sales":
-        exempt_heading = "Exempt or export"
+        exempt_heading = "Exempt"
 
     else:
-        exempt_heading = "Intra - EU"
+        exempt_heading = "Intra-EU"
 
 
     headings_dict = {
@@ -876,9 +876,9 @@ def get_monthly_total_for(sheet, choice, month=None):
     elif choice == "exempt_total":
         column = columns.exempt
         if sheet == "sales":
-            message = "VAT exempt"
+            message = "Exempt"
         else:
-            message = "Intra - EU"
+            message = "Intra-EU"
 
     if month is None:
         month = user_selected_month_from_available_months(sheet)
