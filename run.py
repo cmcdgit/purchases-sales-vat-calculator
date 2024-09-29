@@ -626,7 +626,7 @@ def create_new_sheet(sheet, dont_provide_option=False):
 
     if not dont_provide_option:
         response = input(
-            "\n\tAdd a sheet for the current month? \
+            "\n\tAdd a sheet for the current month? \n \
                 (n to create for another)" + f"{Colors.green} (y/n):  \n"
         )
         response = response.lower().strip()
