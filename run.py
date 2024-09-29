@@ -255,6 +255,7 @@ def get_month():
     now = datetime.datetime.now()
 
     month = now.strftime("%B")
+
     return month
 
 
@@ -339,7 +340,7 @@ def request_new_transaction(sheet, details=None, price_including_vat=None, rate=
     total_price_including_vat = price_including_vat
 
     if details is None:
-        details = input(formatted_details_q)
+        details = input(formatted_details_q).strip()
     else:
         print(formatted_details_q + f"{details}")
 
