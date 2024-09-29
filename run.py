@@ -9,6 +9,7 @@ import sys
 import os
 from time import sleep
 import datetime
+from art import text2art
 import gspread
 from google.oauth2.service_account import Credentials
 from colorama import Fore, init
@@ -69,7 +70,28 @@ class Columns:
     exempt = 9
 
 
-# functions for handling output/input
+def display_welcome_page():
+    """Displays the Welcome page
+    Displays a welcome page using Art package
+    """
+
+    clear_screen()
+    welcome_message = (
+        "  Welcome to VAT-Calculator-App (VCA), a point-of-transaction tool \n" +
+        "\n  allowing small businesses to take control of their TAX " +
+        "accounting, \n\n  and finally taking the pain out of " +
+        "self-assessment\n"
+        )
+    print('\n' + f'{Colors.blue}*'*80)
+    print(f"\n\t{Colors.magenta}{text2art("VAT")}")
+    print(f"\n\t{Colors.magenta}{text2art("CALCULATOR")}")
+    print('\n' + f'{Colors.blue}*'*80)
+    print("\n")
+    typewriter_print(welcome_message)
+    print('\n' + f'{Colors.blue}*'*80)
+    sleep(3)
+
+
 def clear_screen():
     """Clear screen
 
@@ -1156,6 +1178,7 @@ def main():
     """
 
     try:
+        display_welcome_page()
         main_menu()
     except RuntimeError:
         print("Something went wrong, try rebooting")
