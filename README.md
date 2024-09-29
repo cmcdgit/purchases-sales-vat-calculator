@@ -1,4 +1,7 @@
-
+<!--  
+Title
+● Live Site link
+● Brief Introduction
 ● Contents
 ● UX (User Experience): User Stories, User Goals
 ● Design: Colorama, ASCII Art, Flowchart of Logic/Functions, User Feedback
@@ -9,13 +12,12 @@
 ● Testing: Validation of Python, Bugs, Input testing, User Stories, (Optional: Automated Testing)
 ● Credits: Content References, External resources, Acknowledgements
 
-<!--  -->
+-->
+
+# VAT-Calculator-App 
 
 ![LTC logo](assets/images/python.png)
 
-
-
-# VAT-Calculator-App 
 
 ## Intro
 
