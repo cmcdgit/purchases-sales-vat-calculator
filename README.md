@@ -1,19 +1,3 @@
-<!--  
-Title
-● Live Site link
-● Brief Introduction
-● Contents
-● UX (User Experience): User Stories, User Goals
-● Design: Colorama, ASCII Art, Flowchart of Logic/Functions, User Feedback
-● Application Features: Python Logic, Data/APIs used (optional)
-● Future Features
-● Technologies Used: Languages, Libraries, Programs
-● Deployment: Step by step process for deploying to Heroku, API setup (optional)
-● Testing: Validation of Python, Bugs, Input testing, User Stories, (Optional: Automated Testing)
-● Credits: Content References, External resources, Acknowledgements
-
--->
-
 # VAT-Calculator-App 
 
 The live application can be found here - https://vat-calculator-app-63513e79d466.herokuapp.com/
