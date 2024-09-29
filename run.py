@@ -771,13 +771,15 @@ def calculate_total_of_totals_year_to_date(sheet, run_directly=False):
     }
 
     if sheet == "sales":
+        total_heading = "Sales"
         exempt_heading = "Exempt"
 
     else:
+        total_heading = "Purchases"
         exempt_heading = "Intra-EU"
 
     headings_dict = {
-        "total": "Sales",
+        "total": total_heading,
         "vat_23": "23% VAT",
         "vat_13.5": "13.5% VAT",
         "vat_9": "9% VAT",
