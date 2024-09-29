@@ -455,8 +455,8 @@ def generate_next_invoice_number(sheet):
         except ValueError:
             # using try/except to determine whether values are numeric or
             # not safely. No error reporting is needed here so choosing
-            # to return -1
-            return -1
+            # to pass
+            pass
 
 
 def create_sheet_if_not_available(sheet, dont_provide_option=False):
