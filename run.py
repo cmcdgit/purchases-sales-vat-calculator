@@ -77,8 +77,8 @@ def display_welcome_page():
 
     clear_screen()
     welcome_message = (
-        "  Welcome to VAT-Calculator-App (VCA), a point-of-transaction tool \n" +
-        "\n  allowing small businesses to take control of their TAX " +
+        "  Welcome to VAT-Calculator-App (VCA), a point-of-transaction tool " +
+        "\n\n  allowing small businesses to take control of their TAX " +
         "accounting, \n\n  and finally taking the pain out of " +
         "self-assessment\n"
         )
@@ -1066,8 +1066,8 @@ def totals_menu(sheet):
 
     if selection == "10":
         display_wait_message("This might take a few seconds")
-        message, month, rounded_total = get_total_for_all_months("total",
-                                                                 sheet)
+        message, month, rounded_total = get_total_for_all_months(
+            "total", sheet)
         display_message(
             f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
@@ -1076,8 +1076,8 @@ def totals_menu(sheet):
 
     if selection == "11":
         display_wait_message("This might take a few seconds")
-        message, month, rounded_total = get_total_for_all_months("vat_23",
-                                                                 sheet)
+        message, month, rounded_total = get_total_for_all_months(
+            "vat_23", sheet)
         display_message(
             f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
