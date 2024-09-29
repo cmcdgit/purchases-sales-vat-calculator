@@ -1,11 +1,17 @@
+# pylint: disable=too-many-lines
+"""
+This module allows a user to interact with Google sheets using the API
+so they can self assess for tax on sales and puchases items at
+the point of sale
+"""
+
 import sys
 import os
 from time import sleep
 import datetime
 import gspread
 from google.oauth2.service_account import Credentials
-from art import *
-from colorama import Fore, Back, Style, init
+from colorama import Fore, init
 
 SCOPE = [
     "https://www.googleapis.com/auth/drive.file",
@@ -18,18 +24,22 @@ SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 PURCHASES_SHEET = GSPREAD_CLIENT.open('vat_purchases')
 SALES_SHEET = GSPREAD_CLIENT.open('vat_sales')
+
+# pylint: disable-next=invalid-name
 vat_rate = None
+# pylint: disable-next=invalid-name
 total_price_including_vat = None
+# pylint: disable-next=invalid-name
 choice = None
 
 init()
 init(autoreset=True)
 
 
-class colors:
-    """Colorama colors class
+class Colors:
+    """Colorama Colors class
 
-    Class for colors so they can be accessed using dot notation
+    Class for Colors so they can be accessed using dot notation
     for consistency.
     """
 
@@ -41,7 +51,7 @@ class colors:
     magenta = Fore.MAGENTA
 
 
-class columns:
+class Columns:
     """Columns class
 
     Class for columns so they can be accessed using dot notation
@@ -91,9 +101,9 @@ def print_banner(banner):
     Displays a passed banner so a user is clear what menu they are viewing.
     """
 
-    print('\n' + f'{colors.blue}*'*80)
+    print('\n' + f'{Colors.blue}*'*80)
     print(f"\n\t{banner}")
-    print('\n' + f'{colors.blue}*'*80)
+    print('\n' + f'{Colors.blue}*'*80)
     print("")
 
 
@@ -104,7 +114,7 @@ def click_to_continue():
     broken out to a function for consistent display across the app.
     """
 
-    input(f"\n\n\t{colors.yellow}Press Enter to continue: \n")
+    input(f"\n\n\t{Colors.yellow}Press Enter to continue: \n")
 
 
 def print_selected_menu(heading, menu_options, choice_made=None):
@@ -116,7 +126,7 @@ def print_selected_menu(heading, menu_options, choice_made=None):
 
     Returns: choice.
     """
-
+    # pylint: disable-next=global-statement
     global choice
     clear_screen()
     print_banner(heading)
@@ -124,7 +134,7 @@ def print_selected_menu(heading, menu_options, choice_made=None):
     print("Select")
     print("")
     for k, v in menu_options.items():
-        print(f"\t{k: >2} - " + f"{colors.blue}{v}")
+        print(f"\t{k: >2} - " + f"{Colors.blue}{v}")
     print("")
 
     choice = choice_made
@@ -132,7 +142,8 @@ def print_selected_menu(heading, menu_options, choice_made=None):
     choice = request_input_from_user()
 
     while choice not in menu_options:
-        print(f"{colors.red}\nYou have selected an option that does not exist, please try again...\n")
+        print(f"{Colors.red}\nYou have selected an option that does not exist, \
+            please try again...\n")
         sleep(2)
         print_selected_menu(heading, menu_options, choice_made=None)
 
@@ -194,9 +205,9 @@ def display_message(message, wait_time=None, is_warning=True):
     """
 
     if is_warning:
-        print(f"\n\n\t" + f"{colors.red}{message}\n")
+        print("\n\n\t" + f"{Colors.red}{message}\n")
     else:
-        print(f"\n\n\t" + f"{colors.green}{message}\n")
+        print("\n\n\t" + f"{Colors.green}{message}\n")
 
     if wait_time:
         sleep(wait_time)
@@ -210,8 +221,8 @@ def display_wait_message(wait_message):
     Displays a wait message to keep a user engaged while data is retrieved.
     """
 
-    print(f"{colors.blue}\n  ,,")
-    print(f"{colors.blue}c(_)'", end=" ")
+    print(f"{Colors.blue}\n  ,,")
+    print(f"{Colors.blue}c(_)'", end=" ")
     typewriter_print(f"{wait_message}...\n\n")
 
 
@@ -282,7 +293,8 @@ def request_user_select_a_month(sheet):
     Returns: a tuple of (month, available_months).
     """
 
-    month = input("\nPlease select a month to review " + f"{colors.green}(Press L to list available months): \n")
+    month = input("\nPlease select a month to review " + f"{Colors.green}\
+        (Press L to list available months): \n")
     month = month.strip().lower().capitalize()
 
     available_months = get_list_of_all_sheet_titles(sheet)
@@ -315,8 +327,9 @@ def request_new_transaction(sheet, details=None, price_including_vat=None, rate=
 
     Returns: a tuple of (details, total_price_including_vat, vat_rate).
     """
-
+    # pylint: disable-next=global-statement
     global total_price_including_vat
+    # pylint: disable-next=global-statement
     global vat_rate
 
     clear_screen()
@@ -345,7 +358,7 @@ def request_new_transaction(sheet, details=None, price_including_vat=None, rate=
         print(formatted_details_q + f"{details}")
 
     if total_price_including_vat is None:
-        total_price_including_vat = input(formatted_price_q)
+        total_price_including_vat = input(formatted_price_q).strip()
 
         try:
             total_price_including_vat = float(total_price_including_vat)
@@ -358,14 +371,14 @@ def request_new_transaction(sheet, details=None, price_including_vat=None, rate=
         print(formatted_price_q + str(total_price_including_vat))
 
     if vat_rate is None:
-        vat_rate = input(formatted_vat_rate_q)
+        vat_rate = input(formatted_vat_rate_q).strip()
 
         if "%" in vat_rate:
             vat_rate = vat_rate.replace("%", "")
 
         if vat_rate in ["23", "13.5", "9", "4.8", "0"]:
             pass
-        elif vat_rate == None or vat_rate == "":
+        elif vat_rate is None or vat_rate == "":
             show_details_on_vat()
             request_new_transaction(
                 sheet=sheet,
@@ -385,7 +398,7 @@ def request_new_transaction(sheet, details=None, price_including_vat=None, rate=
     return (details, total_price_including_vat, vat_rate)
 
 
-def calculate_vat(total_price_including_vat, vat_rate):
+def calculate_vat(total_including_vat, rate):
     """Calculate and formats VAT for updating sheets
 
     Calculate appropriate vat and returns a comma separated string for
@@ -393,21 +406,21 @@ def calculate_vat(total_price_including_vat, vat_rate):
     """
 
     vat_applicable = round(
-        ((float(total_price_including_vat) * float(vat_rate)) / 100), 2
+        ((float(total_including_vat) * float(rate)) / 100), 2
     )
 
     # return [vat 23%, vat 13.5%, vat 9%, total vat, exempt]
-    if vat_rate == "23":
+    if rate == "23":
         return [vat_applicable, 0, 0, vat_applicable, 0]
 
-    elif vat_rate == "13.5":
+    elif rate == "13.5":
         return [0, vat_applicable, 0, vat_applicable, 0]
 
-    elif vat_rate == "9":
+    elif rate == "9":
         return [0, 0, vat_applicable, vat_applicable, 0]
 
-    elif vat_rate == "0":
-        return [0, 0, 0, 0, total_price_including_vat]
+    elif rate == "0":
+        return [0, 0, 0, 0, total_including_vat]
 
 
 def generate_next_invoice_number(sheet):
@@ -420,7 +433,6 @@ def generate_next_invoice_number(sheet):
     ledger = get_selected_worksheet(sheet)
 
     all_months = get_list_of_all_sheet_titles(sheet)
-    number_of_available_months = len(all_months)
     all_months = reversed(all_months)
 
     for month in all_months:
@@ -429,13 +441,14 @@ def generate_next_invoice_number(sheet):
         last_row = all_data[-1]
 
         # subtracting 1 below to account for gspread column v list numbering
-        last_invoice_number = last_row[columns.invoice_number - 1]
+        last_invoice_number = last_row[Columns.invoice_number - 1]
 
         try:
+            # pylint: disable-next=using-constant-test
             if str(last_invoice_number).isnumeric:
                 # return last invoice number + 1 (next available)
                 return int(last_invoice_number) + 1
-        except ValueError as e:
+        except ValueError:
             # using try/except to determine whether values are numeric or
             # not safely. No error reporting is needed here so choosing
             # to pass
@@ -472,14 +485,16 @@ def add_new_transaction(sheet):
 
     create_sheet_if_not_available(sheet)
 
-    details, total_price_including_vat, vat_rate = request_new_transaction(sheet=sheet)
-    date, time = get_current_date_and_time()
+    details, total_including_vat, rate = request_new_transaction(sheet=sheet)
+    date, _ = get_current_date_and_time()
     invoice_number = generate_next_invoice_number(sheet)
     if invoice_number is None or invoice_number == "":
-        invoice_number = input(f"{colors.red}\n\tNo invoice number available, please manually enter one: {colors.white}\n")
-    formatted_vat_details = calculate_vat(total_price_including_vat, vat_rate)
+        invoice_number = input(f"{Colors.red}\n\tNo invoice number available, \
+            please manually enter one: {Colors.white}\n")
+    formatted_vat_details = calculate_vat(total_including_vat, rate)
 
-    formatted_row = [date, details, invoice_number, total_price_including_vat] + formatted_vat_details
+    formatted_row = [date, details, invoice_number,
+    total_including_vat] + formatted_vat_details
 
     try:
         month = get_month()
@@ -508,29 +523,29 @@ def display_all_transactions_for_month(sheet, month=None):
     num_of_rows = len(ledger.worksheet(month).col_values(1))
     num_of_cols = len(ledger.worksheet(month).row_values(1))
 
-    columns = []
+    columns_list = []
 
     for i in range(num_of_cols):
         new_list = ledger.worksheet(month).col_values(i + 1)
-        columns.insert(i, new_list)
+        columns_list.insert(i, new_list)
 
-    print(f"\n{colors.magenta}{month}")
-    print(f"{colors.blue}-" * 80)
+    print(f"\n{Colors.magenta}{month}")
+    print(f"{Colors.blue}-" * 80)
 
     dont_color = True
 
     for idx, i in enumerate(range(num_of_rows)):
         # enumerating of rows and only colouring the first row of headings
         # for greater readability
-        dont_color = (idx >= 1)
+        dont_color = idx >= 1
         for y in range(num_of_cols):
-            width = get_length_of_longest_list_item(columns[y])
-            column_width = width - len(columns[y][i])
+            width = get_length_of_longest_list_item(columns_list[y])
+            column_width = width - len(columns_list[y][i])
             if not dont_color:
-                print(f"{colors.blue}{columns[y][i]}" + " "*column_width, end=" | ")
+                print(f"{Colors.blue}{columns_list[y][i]}" + " "*column_width, end=" | ")
 
             else:
-                print(f"{columns[y][i]}" + " "*column_width, end=" | ")
+                print(f"{columns_list[y][i]}" + " "*column_width, end=" | ")
         print()
 
     click_to_continue()
@@ -568,7 +583,7 @@ def display_all_transactions_for_a_selected_month(sheet):
             display_message(f"Worksheet not found for chosen month: {e}")
 
     else:
-        print(f"\nAvailable months: {colors.green}{months}")
+        print(f"\nAvailable months: {Colors.green}{months}")
         display_message(
             f"Worksheet not found for chosen month, returning to {sheet} menu!", 3
         )
@@ -607,7 +622,7 @@ def create_new_sheet(sheet, dont_provide_option=False):
     if not dont_provide_option:
         response = input(
             "\n\tAdd a sheet for the current month? (n to create for another)" +
-            f"{colors.green} (y/n):  \n"
+            f"{Colors.green} (y/n):  \n"
         )
         response = response.lower().strip()
 
@@ -632,7 +647,7 @@ def create_new_sheet(sheet, dont_provide_option=False):
 
     elif response.startswith("n"):
         months = get_list_of_all_sheet_titles(sheet)
-        print(f"\n\t{colors.green}Already created: " + f"\n\t{colors.white}{months}\n")
+        print(f"\n\t{Colors.green}Already created: " + f"\n\t{Colors.white}{months}\n")
         new_month = input("\n\tWhich month would you like to add?  \n")
         new_month = new_month.strip().lower().capitalize()
 
@@ -680,15 +695,15 @@ def main_menu():
     date, time = get_current_date_and_time()
     print(f"\n{date} - {time}")
 
-    choice = print_selected_menu(heading, menu_options, choice_made=None)
+    selection = print_selected_menu(heading, menu_options, choice_made=None)
 
-    if choice == "1":
+    if selection == "1":
         sub_menu("sales")
 
-    if choice == "2":
+    if selection == "2":
         sub_menu("purchases")
 
-    if choice == "x":
+    if selection == "x":
         clear_screen()
         print_banner("Goodbye...")
         sleep(2)
@@ -707,7 +722,7 @@ def user_selected_month_from_available_months(sheet):
     if len(available_months) > 0:
         month = None
         while month not in available_months:
-            print(f"\nAvailable months: {colors.green}{available_months}")
+            print(f"\nAvailable months: {Colors.green}{available_months}")
             month = input("\nPlease enter a month from the available options: \n")
             month = month.strip().lower().capitalize()
 
@@ -762,22 +777,22 @@ def calculate_total_of_totals_year_to_date(sheet, run_directly=False):
         "exempt_total": exempt_heading,
     }
 
-    for choice in choices_dict.keys():
+    for k, v in choices_dict.items():
         sleep(10)
         for month in all_months:
             sleep(3)
-            message, month, rounded_total = get_monthly_total_for(sheet, choice, month)
-            choices_dict[choice].append(rounded_total)
+            _, month, rounded_total = get_monthly_total_for(sheet, k, month)
+            choices_dict[k].append(rounded_total)
 
-    print(f"\n{colors.magenta}{sheet.capitalize()} year-to-date totals")
-    print(f"{colors.blue}-" * 80)
+    print(f"\n{Colors.magenta}{sheet.capitalize()} year-to-date totals")
+    print(f"{Colors.blue}-" * 80)
 
-    for idx, k in enumerate(choices_dict.keys()):
-        print(f"{colors.green}{headings_dict[k]:<13}", end="")
+    for k, v in choices_dict.items():
+        print(f"{Colors.green}{headings_dict[k]:<13}", end="")
     print()
 
-    for idx, (k, v) in enumerate(choices_dict.items()):
-        print(f"{colors.blue}€{sum(v):<12.2f}", end="")
+    for k, v in choices_dict.items():
+        print(f"{Colors.blue}€{sum(v):<12.2f}", end="")
 
     print("\n")
 
@@ -804,7 +819,7 @@ def print_all_monthly_totals_on_individual_lines(sheet):
         #   and limit 'Read requests per minute per user
         sleep(10)
 
-    calculate_total_of_totals_year_to_date(sheet) # todo: keep this (slow)
+    calculate_total_of_totals_year_to_date(sheet)
     click_to_continue()
 
 
@@ -820,24 +835,24 @@ def print_monthly_totals_on_one_line(sheet, month=None, print_all_months=False):
     months = []
     rounded_totals = []
 
-    if month == None:
+    if month is None:
         month = user_selected_month_from_available_months(sheet)
 
-    for choice in choices:
-        message, month, rounded_total = get_monthly_total_for(sheet, choice, month)
+    for option in choices:
+        message, month, rounded_total = get_monthly_total_for(sheet, option, month)
         messages.append(message)
         months.append(month)
         rounded_totals.append(rounded_total)
 
-    print(f"\n{colors.magenta}{months[0]} totals")
-    print(f"{colors.blue}-" * 80)
+    print(f"\n{Colors.magenta}{months[0]} totals")
+    print(f"{Colors.blue}-" * 80)
 
-    for idx, message in enumerate(messages):
-        print(f"{colors.green}{message:<13}", end="")
+    for message in messages:
+        print(f"{Colors.green}{message:<13}", end="")
     print()
 
-    for idx, rounded_total in enumerate(rounded_totals):
-        print(f"{colors.white}€{rounded_total:<12.2f}", end="")
+    for rounded_total in rounded_totals:
+        print(f"{Colors.white}€{rounded_total:<12.2f}", end="")
 
     if not print_all_months:
         print("\n")
@@ -847,35 +862,35 @@ def print_monthly_totals_on_one_line(sheet, month=None, print_all_months=False):
         print()
 
 
-def get_monthly_total_for(sheet, choice, month=None):
+def get_monthly_total_for(sheet, option, month=None):
     """Calculates a monthly total for a provided column
 
     Helper function to calculate a monthly total for
     a selected column.
     """
 
-    if choice == "total":
+    if option == "total":
         message = sheet.capitalize()
-        column = columns.total
+        column = Columns.total
 
-    elif choice == "vat_23":
+    elif option == "vat_23":
         message = "23% VAT"
-        column = columns.vat_23
+        column = Columns.vat_23
 
-    elif choice == "vat_13.5":
+    elif option == "vat_13.5":
         message = "13.5% VAT"
-        column = columns.vat_13_5
+        column = Columns.vat_13_5
 
-    elif choice == "vat_9":
+    elif option == "vat_9":
         message = "9% VAT"
-        column = columns.vat_9
+        column = Columns.vat_9
 
-    elif choice == "vat_total":
+    elif option == "vat_total":
         message = "VAT"
-        column = columns.vat
+        column = Columns.vat
 
-    elif choice == "exempt_total":
-        column = columns.exempt
+    elif option == "exempt_total":
+        column = Columns.exempt
         if sheet == "sales":
             message = "Exempt"
         else:
@@ -923,7 +938,6 @@ def totals_menu(sheet):
     data for a given month.
     """
 
-    menu = "totals menu"
     heading = f"{sheet.capitalize()} totals"
     totals_menu_options = {
         "1": "Month: Display all totals",
@@ -944,125 +958,125 @@ def totals_menu(sheet):
         "x": f"Back to {sheet} menu"
     }
 
-    choice = print_selected_menu(heading, totals_menu_options, choice_made=None)
+    selection = print_selected_menu(heading, totals_menu_options, choice_made=None)
 
-    if choice == "1":
+    if selection == "1":
         print_monthly_totals_on_one_line(sheet)
         totals_menu(sheet)
 
-    if choice == "2":
+    if selection == "2":
         message, month, rounded_total = get_monthly_total_for(sheet, "total")
         display_message(
-            f"{message} for {month}: {colors.white}€{rounded_total:.2f}",
+            f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
         )
         totals_menu(sheet)
 
-    if choice == "3":
+    if selection == "3":
         message, month, rounded_total = get_monthly_total_for(sheet, "vat_23")
         display_message(
-            f"{message} for {month}: {colors.white}€{rounded_total:.2f}",
+            f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
         )
         totals_menu(sheet)
 
-    if choice == "4":
+    if selection == "4":
         message, month, rounded_total = get_monthly_total_for(sheet, "vat_13.5")
         display_message(
-            f"{message} for {month}: {colors.white}€{rounded_total:.2f}",
+            f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
         )
         totals_menu(sheet)
 
-    if choice == "5":
+    if selection == "5":
         message, month, rounded_total = get_monthly_total_for(sheet, "vat_9")
         display_message(
-            f"{message} for {month}: {colors.white}€{rounded_total:.2f}",
+            f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
         )
         totals_menu(sheet)
 
-    if choice == "6":
+    if selection == "6":
         message, month, rounded_total = get_monthly_total_for(sheet, "vat_total")
         display_message(
-            f"{message} for {month}: {colors.white}€{rounded_total:.2f}",
+            f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
         )
         totals_menu(sheet)
 
-    if choice == "7":
+    if selection == "7":
         message, month, rounded_total = get_monthly_total_for(sheet, "exempt_total")
         display_message(
-            f"{message} for {month}: {colors.white}€{rounded_total:.2f}",
+            f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
         )
         totals_menu(sheet)
 
-    if choice == "8":
+    if selection == "8":
         display_wait_message("This will take a few minutes")
         print_all_monthly_totals_on_individual_lines(sheet)
         totals_menu(sheet)
 
-    if choice == "9":
+    if selection == "9":
         display_wait_message("This will take a few minutes")
         calculate_total_of_totals_year_to_date(sheet, run_directly=True)
         totals_menu(sheet)
 
-    if choice == "10":
+    if selection == "10":
         display_wait_message("This might take a few seconds")
         message, month, rounded_total = get_total_for_all_months("total", sheet)
         display_message(
-            f"{message} for {month}: {colors.white}€{rounded_total:.2f}",
+            f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
         )
         totals_menu(sheet)
 
-    if choice == "11":
+    if selection == "11":
         display_wait_message("This might take a few seconds")
         message, month, rounded_total = get_total_for_all_months("vat_23", sheet)
         display_message(
-            f"{message} for {month}: {colors.white}€{rounded_total:.2f}",
+            f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
         )
         totals_menu(sheet)
 
-    if choice == "12":
+    if selection == "12":
         display_wait_message("This might take a few seconds")
         message, month, rounded_total = get_total_for_all_months("vat_13.5", sheet)
         display_message(
-            f"{message} for {month}: {colors.white}€{rounded_total:.2f}",
+            f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
         )
         totals_menu(sheet)
 
-    if choice == "13":
+    if selection == "13":
         display_wait_message("This might take a few seconds")
         message, month, rounded_total = get_total_for_all_months("vat_9", sheet)
         display_message(
-            f"{message} for {month}: {colors.white}€{rounded_total:.2f}",
+            f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
         )
         totals_menu(sheet)
 
-    if choice == "14":
+    if selection == "14":
         display_wait_message("This might take a few seconds")
         message, month, rounded_total = get_total_for_all_months("vat_total", sheet)
         display_message(
-            f"{message} for {month}: {colors.white}€{rounded_total:.2f}",
+            f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
         )
         totals_menu(sheet)
 
-    if choice == "15":
+    if selection == "15":
         display_wait_message("This might take a few seconds")
         message, month, rounded_total = get_total_for_all_months("exempt_total", sheet)
         display_message(
-            f"{message} for {month}: {colors.white}€{rounded_total:.2f}",
+            f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
         )
         totals_menu(sheet)
 
-    if choice == "x":
+    if selection == "x":
         sub_menu(sheet)
 
 
@@ -1084,27 +1098,27 @@ def sub_menu(sheet):
         "x": "Return to main menu"
     }
 
-    choice = print_selected_menu(sheet.capitalize(), menu_options, choice_made=None)
+    selection = print_selected_menu(sheet.capitalize(), menu_options, choice_made=None)
 
-    if choice == "1":
+    if selection == "1":
         add_new_transaction(sheet)
-    if choice == "2":
+    if selection == "2":
         display_wait_message("This might take a few seconds")
         display_all_transactions_for_month(sheet)
         sub_menu(sheet)
-    if choice == "3":
+    if selection == "3":
         display_all_transactions_for_a_selected_month(sheet)
         sub_menu(sheet)
-    if choice == "4":
+    if selection == "4":
         create_new_sheet(sheet)
         sub_menu(sheet)
-    if choice == "5":
+    if selection == "5":
         show_details_on_vat()
         sub_menu(sheet)
-    if choice == "6":
+    if selection == "6":
         totals_menu(sheet)
 
-    if choice == "x":
+    if selection == "x":
         main_menu()
 
 
@@ -1116,10 +1130,9 @@ def main():
 
     try:
         main_menu()
-    except Exception:
-        raise ("Something went wrong, try rebooting")
+    except RuntimeError:
+        print("Something went wrong, try rebooting")
 
 
 if __name__ == "__main__":
     main()
-
