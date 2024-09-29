@@ -1077,7 +1077,7 @@ def sub_menu(sheet):
         "1": "Add a new transaction",
         "2": "Display all transactions for the current month",
         "3": "Display all transactions for a given month",
-        "4": f"Create a new {sheet} sheet for the current month (if none yet exists)",
+        "4": f"Create a {sheet} sheet for current month (if none yet exists)",
         "5": "Show details on local VAT rates",
         "6": "Display 'Totals' menu",
         "x": "Return to main menu"
