@@ -142,8 +142,8 @@ def print_selected_menu(heading, menu_options, choice_made=None):
     choice = request_input_from_user()
 
     while choice not in menu_options:
-        print(f"{Colors.red}\nYou have selected an option that does not exist, \
-            please try again...\n")
+        print(f"{Colors.red}\nYou have selected an option that \
+            does not exist, please try again...\n")
         sleep(2)
         print_selected_menu(heading, menu_options, choice_made=None)
 
@@ -186,7 +186,8 @@ def show_details_on_vat():
 
     clear_screen()
 
-    typewriter_print("\n\tPlease check which tax rate applies if you are unsure\n")
+    typewriter_print("\n\tPlease check which tax rate applies \
+        if you are unsure\n")
     for k, v in irish_vat_rates.items():
         print("\t" + "*"*72)
         print(f"{Fore.LIGHTWHITE_EX}\t{k}%" + f"{Fore.BLUE}{v}")
@@ -320,10 +321,12 @@ def get_length_of_longest_list_item(list_to_check):
     return len(sorted(list_to_check, key=len, reverse=True)[0])
 
 
-def request_new_transaction(sheet, details=None, price_including_vat=None, rate=None):
+def request_new_transaction(sheet, details=None,
+                            price_including_vat=None, rate=None):
     """Requests transaction info from a user
 
-    Function to collect the info needed to add a new transaction to a google sheet
+    Function to collect the info needed to add a new transaction t
+    o a google sheet
 
     Returns: a tuple of (details, total_price_including_vat, vat_rate).
     """
@@ -346,8 +349,10 @@ def request_new_transaction(sheet, details=None, price_including_vat=None, rate=
 
     space = "  \n"
     formatted_details_q = f"{details_q}" + "."*(width - len(details_q)) + space
-    formatted_price_q = f"{totals_q}" + "."*(width - len(totals_q)) + space + "€"
-    formatted_vat_rate_q = f"{vat_rate_q}" + "."*(width - len(vat_rate_q)) + space
+    formatted_price_q = f"{totals_q}" + "."*(width - len(totals_q)) + space + \
+        "€"
+    formatted_vat_rate_q = f"{vat_rate_q}" + "."*(width - len(vat_rate_q)) \
+        + space
 
     vat_rate = rate
     total_price_including_vat = price_including_vat
@@ -393,7 +398,6 @@ def request_new_transaction(sheet, details=None, price_including_vat=None, rate=
                 details=details,
                 price_including_vat=total_price_including_vat
             )
-
 
     return (details, total_price_including_vat, vat_rate)
 
@@ -494,7 +498,7 @@ def add_new_transaction(sheet):
     formatted_vat_details = calculate_vat(total_including_vat, rate)
 
     formatted_row = [date, details, invoice_number,
-    total_including_vat] + formatted_vat_details
+                     total_including_vat] + formatted_vat_details
 
     try:
         month = get_month()
@@ -542,7 +546,8 @@ def display_all_transactions_for_month(sheet, month=None):
             width = get_length_of_longest_list_item(columns_list[y])
             column_width = width - len(columns_list[y][i])
             if not dont_color:
-                print(f"{Colors.blue}{columns_list[y][i]}" + " "*column_width, end=" | ")
+                print(f"{Colors.blue}{columns_list[y][i]}" + " \
+                    "*column_width, end=" | ")
 
             else:
                 print(f"{columns_list[y][i]}" + " "*column_width, end=" | ")
@@ -585,7 +590,8 @@ def display_all_transactions_for_a_selected_month(sheet):
     else:
         print(f"\nAvailable months: {Colors.green}{months}")
         display_message(
-            f"Worksheet not found for chosen month, returning to {sheet} menu!", 3
+            f"Worksheet not found for chosen month, returning to \
+                {sheet} menu!", 3
         )
         clear_screen()
         sub_menu(sheet)
@@ -616,13 +622,12 @@ def create_new_sheet(sheet, dont_provide_option=False):
         exempt_heading = "Intra-EU"
 
     headings = ["Date",	"Details", "Invoice", "Total", "Vat 23%",
-                "Vat 13.5%", "VAT 9%", "VAT", f"{exempt_heading}"
-               ]
+                "Vat 13.5%", "VAT 9%", "VAT", f"{exempt_heading}"]
 
     if not dont_provide_option:
         response = input(
-            "\n\tAdd a sheet for the current month? (n to create for another)" +
-            f"{Colors.green} (y/n):  \n"
+            "\n\tAdd a sheet for the current month? \
+                (n to create for another)" + f"{Colors.green} (y/n):  \n"
         )
         response = response.lower().strip()
 
@@ -636,7 +641,7 @@ def create_new_sheet(sheet, dont_provide_option=False):
         try:
             ledger.add_worksheet(month, rows=150, cols=10)
             ledger.worksheet(month).append_row(headings)
-            ledger.worksheet(month).format("A1:I1", { 'backgroundColor': {
+            ledger.worksheet(month).format("A1:I1", {'backgroundColor': {
                 'blue': 0.65882355,
                 'green': 0.84313726,
                 'red': 0.7137255
@@ -647,7 +652,8 @@ def create_new_sheet(sheet, dont_provide_option=False):
 
     elif response.startswith("n"):
         months = get_list_of_all_sheet_titles(sheet)
-        print(f"\n\t{Colors.green}Already created: " + f"\n\t{Colors.white}{months}\n")
+        print(f"\n\t{Colors.green}Already created: \
+            " + f"\n\t{Colors.white}{months}\n")
         new_month = input("\n\tWhich month would you like to add?  \n")
         new_month = new_month.strip().lower().capitalize()
 
@@ -657,11 +663,12 @@ def create_new_sheet(sheet, dont_provide_option=False):
             try:
                 ledger.add_worksheet(new_month, rows=150, cols=10)
                 ledger.worksheet(new_month).append_row(headings)
-                ledger.worksheet(new_month).format("A1:I1", { 'backgroundColor': {
-                    'blue': 0.65882355,
-                    'green': 0.84313726,
-                    'red': 0.7137255
-            }})
+                ledger.worksheet(new_month).format("A1:I1", {
+                    'backgroundColor': {
+                        'blue': 0.65882355,
+                        'green': 0.84313726,
+                        'red': 0.7137255
+                    }})
                 display_message(f"Worksheet created for {new_month}", 2, False)
 
             except FileNotFoundError as e:
@@ -723,7 +730,8 @@ def user_selected_month_from_available_months(sheet):
         month = None
         while month not in available_months:
             print(f"\nAvailable months: {Colors.green}{available_months}")
-            month = input("\nPlease enter a month from the available options: \n")
+            month = input("\nPlease enter a month from the available options:\
+                 \n")
             month = month.strip().lower().capitalize()
 
         if month in available_months:
@@ -732,7 +740,8 @@ def user_selected_month_from_available_months(sheet):
         return month
 
     else:
-        display_message("No months a currently available, please add one first", 3)
+        display_message("No months a currently available, \
+            please add one first", 3)
         totals_menu(sheet)
 
 
@@ -766,7 +775,6 @@ def calculate_total_of_totals_year_to_date(sheet, run_directly=False):
 
     else:
         exempt_heading = "Intra-EU"
-
 
     headings_dict = {
         "total": "Sales",
@@ -814,7 +822,8 @@ def print_all_monthly_totals_on_individual_lines(sheet):
 
     for month in all_months:
         print_monthly_totals_on_one_line(sheet, month, print_all_months=True)
-        # sleep added here to slow down api usage as the program was experiencing
+        # sleep added here to slow down api usage as the program
+        # was experiencing
         # -APIError: [429]: Quota exceeded for quota metric 'Read requests'
         #   and limit 'Read requests per minute per user
         sleep(10)
@@ -823,14 +832,16 @@ def print_all_monthly_totals_on_individual_lines(sheet):
     click_to_continue()
 
 
-def print_monthly_totals_on_one_line(sheet, month=None, print_all_months=False):
+def print_monthly_totals_on_one_line(sheet, month=None,
+                                     print_all_months=False):
     """Outputs a chosen monthly total
 
     Function to display a monthly total on it's own
     seperate line.
     """
 
-    choices = ["total", "vat_23", "vat_13.5", "vat_9", "vat_total", "exempt_total"]
+    choices = ["total", "vat_23", "vat_13.5", "vat_9",
+               "vat_total", "exempt_total"]
     messages = []
     months = []
     rounded_totals = []
@@ -839,7 +850,8 @@ def print_monthly_totals_on_one_line(sheet, month=None, print_all_months=False):
         month = user_selected_month_from_available_months(sheet)
 
     for option in choices:
-        message, month, rounded_total = get_monthly_total_for(sheet, option, month)
+        message, month, rounded_total = get_monthly_total_for(sheet, option,
+                                                              month)
         messages.append(message)
         months.append(month)
         rounded_totals.append(rounded_total)
@@ -923,7 +935,8 @@ def get_total_for_all_months(column, sheet):
     rounded_totals = []
 
     for month in months:
-        message, month, rounded_total = get_monthly_total_for(sheet, column, month)
+        message, month, rounded_total = get_monthly_total_for(sheet, column,
+                                                              month)
         messages.append(message)
         rounded_totals.append(rounded_total)
 
@@ -958,7 +971,8 @@ def totals_menu(sheet):
         "x": f"Back to {sheet} menu"
     }
 
-    selection = print_selected_menu(heading, totals_menu_options, choice_made=None)
+    selection = print_selected_menu(
+        heading, totals_menu_options, choice_made=None)
 
     if selection == "1":
         print_monthly_totals_on_one_line(sheet)
@@ -981,7 +995,8 @@ def totals_menu(sheet):
         totals_menu(sheet)
 
     if selection == "4":
-        message, month, rounded_total = get_monthly_total_for(sheet, "vat_13.5")
+        message, month, rounded_total = get_monthly_total_for(sheet,
+                                                              "vat_13.5")
         display_message(
             f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
@@ -997,7 +1012,8 @@ def totals_menu(sheet):
         totals_menu(sheet)
 
     if selection == "6":
-        message, month, rounded_total = get_monthly_total_for(sheet, "vat_total")
+        message, month, rounded_total = get_monthly_total_for(sheet,
+                                                              "vat_total")
         display_message(
             f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
@@ -1005,7 +1021,8 @@ def totals_menu(sheet):
         totals_menu(sheet)
 
     if selection == "7":
-        message, month, rounded_total = get_monthly_total_for(sheet, "exempt_total")
+        message, month, rounded_total = get_monthly_total_for(sheet,
+                                                              "exempt_total")
         display_message(
             f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
@@ -1024,7 +1041,8 @@ def totals_menu(sheet):
 
     if selection == "10":
         display_wait_message("This might take a few seconds")
-        message, month, rounded_total = get_total_for_all_months("total", sheet)
+        message, month, rounded_total = get_total_for_all_months("total",
+                                                                 sheet)
         display_message(
             f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
@@ -1033,7 +1051,8 @@ def totals_menu(sheet):
 
     if selection == "11":
         display_wait_message("This might take a few seconds")
-        message, month, rounded_total = get_total_for_all_months("vat_23", sheet)
+        message, month, rounded_total = get_total_for_all_months("vat_23",
+                                                                 sheet)
         display_message(
             f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
@@ -1042,7 +1061,8 @@ def totals_menu(sheet):
 
     if selection == "12":
         display_wait_message("This might take a few seconds")
-        message, month, rounded_total = get_total_for_all_months("vat_13.5", sheet)
+        message, month, rounded_total = get_total_for_all_months(
+            "vat_13.5", sheet)
         display_message(
             f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
@@ -1051,7 +1071,8 @@ def totals_menu(sheet):
 
     if selection == "13":
         display_wait_message("This might take a few seconds")
-        message, month, rounded_total = get_total_for_all_months("vat_9", sheet)
+        message, month, rounded_total = get_total_for_all_months(
+            "vat_9", sheet)
         display_message(
             f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
@@ -1060,7 +1081,8 @@ def totals_menu(sheet):
 
     if selection == "14":
         display_wait_message("This might take a few seconds")
-        message, month, rounded_total = get_total_for_all_months("vat_total", sheet)
+        message, month, rounded_total = get_total_for_all_months(
+            "vat_total", sheet)
         display_message(
             f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
@@ -1069,7 +1091,8 @@ def totals_menu(sheet):
 
     if selection == "15":
         display_wait_message("This might take a few seconds")
-        message, month, rounded_total = get_total_for_all_months("exempt_total", sheet)
+        message, month, rounded_total = get_total_for_all_months(
+            "exempt_total", sheet)
         display_message(
             f"{message} for {month}: {Colors.white}€{rounded_total:.2f}",
             is_warning=False
@@ -1098,7 +1121,8 @@ def sub_menu(sheet):
         "x": "Return to main menu"
     }
 
-    selection = print_selected_menu(sheet.capitalize(), menu_options, choice_made=None)
+    selection = print_selected_menu(sheet.capitalize(), menu_options,
+                                    choice_made=None)
 
     if selection == "1":
         add_new_transaction(sheet)
