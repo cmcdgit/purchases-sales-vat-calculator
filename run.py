@@ -533,7 +533,7 @@ def display_all_transactions_for_month(sheet, month=None):
         new_list = ledger.worksheet(month).col_values(i + 1)
         columns_list.insert(i, new_list)
 
-    print(f"\n{Colors.magenta}{month}")
+    print(f"\n{Colors.magenta}{month} {sheet}")
     print(f"{Colors.blue}-" * 80)
 
     dont_color = True
