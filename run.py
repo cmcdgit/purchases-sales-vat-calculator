@@ -546,8 +546,8 @@ def display_all_transactions_for_month(sheet, month=None):
             width = get_length_of_longest_list_item(columns_list[y])
             column_width = width - len(columns_list[y][i])
             if not dont_color:
-                print(f"{Colors.blue}{columns_list[y][i]}" + " \
-                    "*column_width, end=" | ")
+                print(f"{Colors.blue}\
+                    {columns_list[y][i]}" + " "*column_width, end=" | ")
 
             else:
                 print(f"{columns_list[y][i]}" + " "*column_width, end=" | ")
