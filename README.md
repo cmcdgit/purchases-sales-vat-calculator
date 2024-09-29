@@ -29,17 +29,106 @@ business.  I had the idea for this particular project after a discussion I had w
 they found themselves facing.  This application is currently in an MVP state and ideally will have a better front-end for a better user-experience.
 
 
+
+
 ## Contents
 
-- **Main Menu**
+1. [Intro](#intro)
+
+2. [Contents](#contents)
+
+3. [UX](#ux) #
+   1. [Potential Customers](#potential-customers)
+   2. [User Stories](#user-stories)
+   3. [Flow Chart](#flow-chart) #todo
+   3. [User Goals](#user-goals) #todo
+
+4. [Design](#design)
+   1. [Colours used](#colours-used)
+   3. [Welcome Message](#welcome-message)
+   2. [Main Menu](#main-menu)
+   4. [Purchases/Sales Menu](#purchases/sales-menu)
+   5. [Totals Menu](#totals-menu)
+
+5. [Application Features](#application-features)
+
+6. [Future Features](#future-features)
+
+7. [Technologies Used](#technologies-used)
+   1. [Modules](#modules-used)
+
+8. [Deployment](#deployment)
+   1. [Deploying on Heroku](#deploying-on-heroku)
+
+9. [Testing](#testing) @todo
+
+10. [Credits](#credits) #todo
+   1. [Content](#content)
+
+
+
+## UX
+
+### Potential Customers
+  1. Small businesses looking to do their own book-keeping and keep accountacy costs low
+
+### User Stories
+  1. As a user, I want to be able to create Google sheets documents programmatically to track VAT on my purchases and sales
+  2. As a user, I want to be able to update these documents
+  3. As a user, I want to be able to easily view data that I have added to these documents
+  4. As a user, I want to be able to navigate between sheets with as much ease as possible
+  5. As a user, I want to be able to easily calculate VAT on purchases and sales for a particular month
+  6. As a user, I want to be able to easily access totals for all the different VAT rates
+  7. As a user, I want to be able to informed of what is happening at all times
+  8. As a user, I want to the application to be intuitive
+  9. As a user, I want to be able to display info about TAX rates so I can easily determine the correct rate to apply
+  10. As a user, I want to be able to navigate to the previous menu easily
+  11. As a user, I want to be able to exit the program programmatically
+
+### Flow Chart
+
+### User Goals
+
+
+
+[Back to contents](#contents)
+
+
+## Design
+
+### Colours Used
+
+  - To add some extra colour to the terminal I installed the 'Colorama' package,
+  specifically the Fore and Init modules.
+
+  - Unconventionally I created a class for Colors so they I could access them easily using dot notation.
+
+  - These are the colours I used in the application
+
+    1) blue = Fore.BLUE           (Used to create contrast on output to draw attention to the most important data)
+    2) green = Fore.GREEN         (Used to display success messages to a user)
+    3) red = Fore.RED             (Used for warning messages, such as when a user tries to create something that already exists)
+    4) white = Fore.WHITE         (Used to make important figures pop slightly)
+    5) yellow = Fore.YELLOW       (Used to draw a users attention to an action - such as 'click to continue')
+    6) magenta = Fore.MAGENTA     (Used for the banner and to make things decorative occasionally)
+
+
+### Welcome Message
+  - Despite the size limitations of the terminal window in Heroku, I eventually opted to add a welcome message to the application
+
+    <details><summary>See here</summary>
+    <img src="assets/images/welcome-message.png" alt="welcome message" width="1200"/>
+
+### Main Menu
 
   - The main menu is the landing page that a user will first interact with, it is currently quite basic hiding the real functionality that lies within the
   sub-menus for Purchases and Sales, and only allows a user decide whether they wish to interact with Purchases, Sales or when finished with the application,
   Exit. 
 
+    <details><summary>See here</summary>
     <img src="assets/images/main-menu.png" alt="main menu" width="1200"/>
 
-- **Sales/Purchases Menu**
+### Purchases/Sales Menu
 
   - The Sales/Purchases menus have 7 options to choose from
     1) Add a new transaction
@@ -77,15 +166,15 @@ they found themselves facing.  This application is currently in an MVP state and
       - The return to main menu option allows a user to switch between purchases and sales menus and also provides a way
       to safely exit the program. 
 
+    <details><summary>See here</summary>
     <img src="assets/images/sales-menu.png" alt="sales-menu" width="1200"/>
 
-- **Display 'Totals' menu**
+### Totals menu
 
   - The Display Totals menu has many options and is best understood by recognizing that options 1 - 7 do for one individually
-  selected month what options 9 - 15 do for all the months in the year-to-date.  Option X is self explanatory.  Option 8 is the 
+  selected month what options 9 - 15 do for all the months in the year-to-date.  Option X is self explanatory.  Option 8 runs a
+  combination of a few options for informative output.
   
-  ***Monthly***
-
     1) Displays a given month's totals on the screen as one line (a one-liner for options 2 - 7)  
     2) Displays totals sales for any given month available
     3) Displays total VAT at 23% for a given month
@@ -93,11 +182,9 @@ they found themselves facing.  This application is currently in an MVP state and
     5) Displays total VAT at 9% for a given month
     6) Displays total VAT combined for a given month
     7) Displays total VAT exempt transactions for a given month
-
-    8) 
-
-  ***Year-To_Date***
-
+    8) Run option 1 for all available months and then run option 9 (it can be slow due to waits added
+    to prevent breaching Google's fair usage policy on the free tier)
+    Data can be slow but it is very informative
     9) Displays all year-to-date totals on the screen as one line (a one-liner for options 10 - 15)  
     10) Displays year-to-date totals sales
     11) Displays year-to-date total VAT at 23%
@@ -106,113 +193,101 @@ they found themselves facing.  This application is currently in an MVP state and
     14) Displays year-to-date total VAT combined
     15) Displays year-to-date total VAT exempt transactions
 
+    <details><summary>See here</summary>
     <img src="assets/images/display-totals-menu.png" alt="display totals menu" width="1200"/>
 
-- **Footer**
 
-  - The footer allows users to navigate to various "learn to code" social media sites, such as a Facebook page, an Instagram page, Twitter/X and also a Snapchat page.
 
-    <img src="assets/images/ltc-social-links.png" alt="social media footer links" width="1200"/>
+[Back to contents](#contents)
 
-#### Button/Links
-
-All buttons and links from within the Footer navigate the user to a newly opened tab featuring the relevent content. All Amazon links on the recommended books page navigate the user to the corresponding book on Amazon, again on a new tab.
-
-### Features Left to Implement
-
-There are a few things on the site that I would like to implement next:
-
-- The blurb overlaying the book images on the book recommendations page would ideally only display while a user hovers over the image of the book's cover so that the focus is solely on the book the user is interested in.
-- Other programming languages could be added to the site quite easily, and that would be something that I would like to do next.
-- Social media sites are currently not active as the site does not yet have social media.
-- Scores are tracked while a user is playing a game currently but this information is lost once a player restarts another game. Ideally this information would be captured and displayed in a leaderboard. By making it more competetive this should increase engagement in the site.
-- Ideally there would be more questions available at all difficulty levels so that a user could opt to play a game at each of the available levels only.
-
-## UX
-
-### User Stories
-
-### User Goals
-
-## Design
 
 ## Application Features
 
+1) Create new Google sheets programmatically guiding the user without errors occuring
+2) Automatically create new sheets once a user tries to access them or attempts to add a transaction
+3) Seperates Sales and Purchases out to two documents to reduce risk of error
+4) Allows a user to interogate the data on the sheets for viewing
+5) Allows a user the ability to sum columns on a per month basis
+6) Allows a user the ability to sum columns on a year-to-date basis
+
+
+
+[Back to contents](#contents)
+
+
 ## Future Features
 
+1) Add the ability to edit and delete as currently there is no way to do this programatically, in the event that an error has been made
+2) Implement a frontend that is not a terminal for improved UX
+3) Add functionality to calculate VAT totals with different frequencies, 2 monthly, 3 monthly etc, to account for various pay schedules
+4) The `gspread` module is powerful and I am certain that investigating further what this module can do would show other enhancements
+5) Add the ability to use OCR or AI to upload text documents to Google spreadsheets so historical data can be captured and interogated more easily
+
+
+
+[Back to contents](#contents)
+
+
 ## Technologies Used
+- [GitHub](https://github.com)
+- [Git](https://git-scm.com)
+- [VS Code](https://code.visualstudio.com)
+- [Heroku](https://heroku.com)
+- [Pylint](https://marketplace.visualstudio.com/items?itemName=ms-python.pylint)
+- [Flake8](https://marketplace.visualstudio.com/items?itemName=ms-python.flake8)
+- [Code Institutes Pep8 Checker](https://pep8ci.herokuapp.com)
+- [Lucid Chart](https://www.lucidchart.com)
+
+
+### Modules Used
+- [time](https://docs.python.org/3/library/time.html) - Sleep from time used to provide wait periods throughout
+- [datetime](https://docs.python.org/3/library/datetime.html) - Correct formatting of dates for Google-sheet integration
+- [os](https://docs.python.org/3/library/os.html) - Operating system level access to clear the screem so a user is focusing oon what they should
+- [sys](https://docs.python.org/3/library/sys.html) - Used to exit gracefully and to emulate typewriter printout
+- [Colorama](https://pypi.org/project/colorama) - Used to provide colour to the terminal and make data more readable
+- [Gspread](https://docs.gspread.org/en/latest) - Used to interact with Google sheets to both write and read data, and create new sheets
+
+
+
+
+[Back to contents](#contents)
+
 
 ## Deployment
 
-## Testing
+### Deploying On Heroku
 
-- The site was tested extensively using Chrome devtools to confirm that all pages look and behave as expected across all device sizes.
-- All links in the footer and also the Amazon links were tested to confirm that each will open a new browser tab and bring the user to the intended destination site.
+1. Navigate to the Heroku dashboard [here](https://dashboard.heroku.com/apps)
+2. Click on the New dropdown in the top right corner and click to 'Create new app'
+3. Choose a unique name and set the region accordingly, finally clicking create app
+4. Once created it is best to navigate to the `Settings` tab to set `Config Vars` (Env variables)
+5. Create a Config var called `CREDS` and set the value as the entire contents of the `creds.json` file
+6. Create another Config var called `PORT` and set it to `8000`
+7. Underneath Config vars now add two buildpacks maintaining this order:
+    - `heroku/python`
+    - `heroku/nodejs`
 
-### Flake8
-  - No errors were found using the official W3C validator
-### Pylint
-  - No errors were found using the the official (Jigsaw) validator
+8. Navigate to the `Deploy` tab
+9. Authenticate to your GitHub account
+9. Connect to your application's GitHub repository.
+10. Click on `Deploy Branch`
+11. When it is deployed you can access the site by clicking `View`
 
-## Deployment
 
-- The site was deployed to GitHub pages. The steps to deploy are as follows:
-  - In the GitHub repository, navigate to the Settings tab
-  - From the source section drop-down menu, select the Master Branch
-  - Once the master branch has been selected, the page will be automatically refreshed with a detailed ribbon display to indicate the successful deployment.
 
-The live link can be found here - https://cmcdgit.github.io/learn-to-code/index.html
+[Back to contents](#contents)
+
+
+## Testing 
+
+
+[Back to contents](#contents)
+
 
 ## Credits
 
 ### Content
 
-- The icons in the footer were taken from [Font Awesome](https://fontawesome.com/)
-- The questions for the Quiz page were generated using [ChatGPT](https://chatgpt.com/) and then successfully passed a test for plagiarism
-- The array of books used to populate the book recommendations page were generated using [ChatGPT](https://chatgpt.com/) and also successfully passed a test for plagiarism
-- The favicon icon in the tab/title bar was created by Soetarman Atmodjo and was taken from [The Noun Project](https://thenounproject.com/browse/icons/term/coding/)
+- The favicon icon in the tab/title bar was created by Wartini and was taken from [The Noun Project](https://thenounproject.com/browse/icons/term/calculator/)
 
-Calculator by Wartini from <a href="https://thenounproject.com/browse/icons/term/calculator/" target="_blank" title="Calculator Icons">Noun Project</a> (CC BY 3.0)
-
-### Media
-
-- All book images are from (https://www.amazon.co.uk/)
-- The background photo on the coding challenge page is available thanks to Karthik Swarnkar on [Unsplash](https://unsplash.com/photos/a-close-up-of-a-computer-screen-with-a-bunch-of-text-on-it-AoNvwL-Dmtw)
-- The background photo on the recommended books page is available thanks to Radek Grzybowski on [Unsplash](https://unsplash.com/photos/macbook-pro-on-brown-wooden-table-inside-room-eBRTYyjwpRY)
-
-
-
-<!--  -->
-
-![CI logo](https://codeinstitute.s3.amazonaws.com/fullstack/ci_logo_small.png)
-
-Welcome,
-
-This is the Code Institute student template for deploying your third portfolio project, the Python command-line project. The last update to this file was: **May 14, 2024**
-
-## Reminders
-
-- Your code must be placed in the `run.py` file
-- Your dependencies must be placed in the `requirements.txt` file
-- Do not edit any of the other files or your code may not deploy properly
-
-## Creating the Heroku app
-
-When you create the app, you will need to add two buildpacks from the _Settings_ tab. The ordering is as follows:
-
-1. `heroku/python`
-2. `heroku/nodejs`
-
-You must then create a _Config Var_ called `PORT`. Set this to `8000`
-
-If you have credentials, such as in the Love Sandwiches project, you must create another _Config Var_ called `CREDS` and paste the JSON into the value field.
-
-Connect your GitHub repository and deploy as normal.
-
-## Constraints
-
-The deployment terminal is set to 80 columns by 24 rows. That means that each line of text needs to be 80 characters or less otherwise it will be wrapped onto a second line.
-
----
-
-Happy coding!
+[Back to contents](#contents)

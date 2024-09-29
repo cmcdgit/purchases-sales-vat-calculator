@@ -79,7 +79,7 @@ def display_welcome_page():
     welcome_message = (
         "  Welcome to VAT-Calculator-App (VCA), a point-of-transaction tool " +
         "\n\n  allowing small businesses to take control of their TAX " +
-        "accounting, \n\n  and finally taking the pain out of " +
+        "accounting, \n\n  ...finally taking the pain out of " +
         "self-assessment\n"
         )
     print('\n' + f'{Colors.blue}*'*80)
