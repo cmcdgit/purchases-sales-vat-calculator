@@ -279,6 +279,11 @@ they found themselves facing.  This application is currently in an MVP state and
 
 
 ## Testing 
+  - CI-Pylinter Results
+
+    <details><summary>See here</summary>
+    <img src="assets/images/ci-pylinter.png" alt="pylinter results" width="1200"/>
+
 
 
 [Back to contents](#contents)
@@ -289,5 +294,7 @@ they found themselves facing.  This application is currently in an MVP state and
 ### Content
 
 - The favicon icon in the tab/title bar was created by Wartini and was taken from [The Noun Project](https://thenounproject.com/browse/icons/term/calculator/)
+
+
 
 [Back to contents](#contents)
