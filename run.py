@@ -417,13 +417,13 @@ def calculate_vat(total_including_vat, rate):
     if rate == "23":
         return [vat_applicable, 0, 0, vat_applicable, 0]
 
-    elif rate == "13.5":
+    if rate == "13.5":
         return [0, vat_applicable, 0, vat_applicable, 0]
 
-    elif rate == "9":
+    if rate == "9":
         return [0, 0, vat_applicable, vat_applicable, 0]
 
-    elif rate == "0":
+    if rate == "0":
         return [0, 0, 0, 0, total_including_vat]
 
 
@@ -455,8 +455,8 @@ def generate_next_invoice_number(sheet):
         except ValueError:
             # using try/except to determine whether values are numeric or
             # not safely. No error reporting is needed here so choosing
-            # to pass
-            pass
+            # to return -1
+            return -1
 
 
 def create_sheet_if_not_available(sheet, dont_provide_option=False):
@@ -622,8 +622,8 @@ def create_new_sheet(sheet, dont_provide_option=False):
     else:
         exempt_heading = "Intra-EU"
 
-    headings = ["Date",	"Details", "Invoice", "Total", "Vat 23%",
-                "Vat 13.5%", "VAT 9%", "VAT", f"{exempt_heading}"]
+    headings = ["Date",	"Details", "Inv", "Total", "23%",
+                "13.5%", "9%", "VAT", f"{exempt_heading}"]
 
     if not dont_provide_option:
         response = input(
@@ -781,9 +781,9 @@ def calculate_total_of_totals_year_to_date(sheet, run_directly=False):
 
     headings_dict = {
         "total": total_heading,
-        "vat_23": "23% VAT",
-        "vat_13.5": "13.5% VAT",
-        "vat_9": "9% VAT",
+        "vat_23": "23%",
+        "vat_13.5": "13.5%",
+        "vat_9": "9%",
         "vat_total": "VAT",
         "exempt_total": exempt_heading,
     }
@@ -889,15 +889,15 @@ def get_monthly_total_for(sheet, option, month=None):
         column = Columns.total
 
     elif option == "vat_23":
-        message = "23% VAT"
+        message = "23%"
         column = Columns.vat_23
 
     elif option == "vat_13.5":
-        message = "13.5% VAT"
+        message = "13.5%"
         column = Columns.vat_13_5
 
     elif option == "vat_9":
-        message = "9% VAT"
+        message = "9%"
         column = Columns.vat_9
 
     elif option == "vat_total":
